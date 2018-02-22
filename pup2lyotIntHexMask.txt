@@ -11,10 +11,10 @@ start
 	efield
 	setSize:1024, 1024, 1
 	pointSource:1.0, 0.0, 0.0
-	pointSource:1e-7, 3.0, 1.0
-#	wavelength:5.62175e-07
+#	pointSource:1e-7, 3.0, 1.0
+	wavelength:5.62175e-07
 #	wavelengthBandwidth: 5.62175e-07, 0.1, 20
-	wavelengthBandwidth: 5.65e-07, 0.1, 20
+#	wavelengthBandwidth: 5.65e-07, 0.1, 20
 	beamRadiusPhysical:0.022
 	pixelScale:1.100e-04
 end

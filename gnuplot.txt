@@ -1,6 +1,0 @@
-unset key 
-set title "contrast curve" 
-set xrange [0.000000:12.000000] 
-set logscale y 
-set format y "10^{%+02T}" 
-plot 'gnuData.txt' with lines 
