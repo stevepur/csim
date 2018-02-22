@@ -1,0 +1,4 @@
+set title "test" 
+set size ratio 1 
+set palette rgb 33,13,10 
+plot 'gnuData.dat' matrix with image

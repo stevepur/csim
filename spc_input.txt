@@ -1,0 +1,92 @@
+#
+# Shaped pupil coronagraph (SPC)
+#
+start
+	telescope
+	primaryDiameter:2.4
+	primaryFRatio:15.1
+end
+# start here defining the input E-field
+start
+	efield
+	setSize:1000, 1000, 1
+	pixelScale:2.400e-03
+	beamRadiusPhysical:1.2
+	arraySizePixels:1000
+#	wavelength:575e-9
+	wavelengthRange:546e-9, 604e-9, 1e-9
+	pointSource:1.0, 0.0, 0.0
+	end
+# ------------------------
+# the coronagraph
+# ------------------------
+start
+	coronagraph
+	start
+		mask
+		filename:spc/pupil_WFIRST_for_SPC_20170501.fits
+		position:0
+		# give it a name
+		name:entrance pupil
+#		draw:postExecute
+#		save:postExecute
+	end
+	start
+		mask
+		filename:spc/SP_SPCdisk_12BB_C87_65WA200_26LS88_N1000gray_20170130a.fits
+		position:0
+		# give it a name
+		name:SPC pupil
+#		save:postExecute
+#		draw:postExecute
+	end
+	start
+		fpmPupToLyot
+		name:FPM
+		position:0
+		disableForCalibration:on
+		start
+			fpmBinaryForPupToLyot
+			maskFilename:spc/spc_fpm_mask.fits
+			calibFilename:spc/spc_fpm_calib_mask.fits
+			referenceLambda:575e-9
+			innerRadiusFld:6.5
+			outerRadiusFld:20
+		end
+#		draw:postExecute
+#		save:postExecute
+	end
+#	start
+#		breakExecution
+#	end
+	start
+		mask
+		filename:spc/lyotStop.fits
+		position:0
+		# give it a name
+		name:lyot stop
+#		draw:postExecute
+#		save:postExecute
+	end
+	start 
+		fraunhoferFocal
+		position:0
+		name:science CCD
+		referenceLambda:575e-9
+		samplesPerflD:7
+		FOVflD:48
+#		draw:postExecute
+#		draw:preExecute
+#		save:preExecute
+#		save:postExecute
+	end
+end
+#start
+#	execute
+#end
+start
+	makeContrastCurve
+	filename:contrastCurve.txt
+	draw:on
+	drawTo:full
+end

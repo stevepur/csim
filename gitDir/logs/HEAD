@@ -1,0 +1,5 @@
+0000000000000000000000000000000000000000 c548cd433c2e30b202f518af723f1e2b6a3a7bb5 steve <steve.bryson@nasa.gov> 1487638831 -0800	commit (initial): Initial Commit
+c548cd433c2e30b202f518af723f1e2b6a3a7bb5 7d1f87eba5265b967e2fc07e7da804c6c2874825 steve <steve.bryson@nasa.gov> 1492758651 -0700	commit: got cfits working!
+7d1f87eba5265b967e2fc07e7da804c6c2874825 1011e656ba4ab2ef1d40af9094d1d2431adc1d04 steve <steve.bryson@nasa.gov> 1492758762 -0700	commit: after fits io
+1011e656ba4ab2ef1d40af9094d1d2431adc1d04 28b0a93ca9cd28eb285c0d949aa5c513a41f4af8 steve <steve.bryson@nasa.gov> 1499342284 -0700	commit: Fresnel propagation working.
+28b0a93ca9cd28eb285c0d949aa5c513a41f4af8 b19f16272848ccf953d6902239688d3280e4e20d steve <steve.bryson@nasa.gov> 1499342352 -0700	commit: forgot these

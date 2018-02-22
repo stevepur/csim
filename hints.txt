@@ -1,0 +1,49 @@
+add directories etc. to csim/configure.ac and csim/src/Makefile.am
+
+export PATH=/Developer/NVIDIA/CUDA-8.0/bin${PATH:+:${PATH}}
+export DYLD_LIBRARY_PATH=/Developer/NVIDIA/CUDA-8.0/lib\
+                         ${DYLD_LIBRARY_PATH:+:${DYLD_LIBRARY_PATH}}
+						 
+export GNUTERM=x11
+export OMP_NUM_THREADS=8
+
+to make fftw fftw-3.3.7:
+./configure --enable-openmp CC="g++-mp-6"
+make
+
+
+# enable openmp  PREFERRED DEFAULT
+autoreconf --install
+./configure 'CXXFLAGS= -g -O2 -Wunknown-pragmas -fopenmp'
+make clean
+make
+
+# default
+autoreconf --install
+./configure
+make clean
+make
+
+
+# highly profilable
+autoreconf --install
+./configure 'CXXFLAGS=-g'
+make
+
+# highly optimized, doesn't really help
+autoreconf --install
+./configure 'CXXFLAGS=-O3'
+make
+
+# pragma warnings
+autoreconf --install
+./configure 'CXXFLAGS=-Wunknown-pragmas'
+make
+
+
+
+=====================================
+openmp test compile line
+
+g++-mp-6 omptest.c -I/opt/local/lib/gcc6/gcc/x86_64-apple-darwin15/6.3.0/include/ -Wall -lgomp -fopenmp
+

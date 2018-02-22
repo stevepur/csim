@@ -1,0 +1,7 @@
+autoscan: warning: missing AC_C_INLINE wanted by: 
+	src/efield/efield.cpp:36
+	src/efield/efield.cpp:40
+	src/efield/efield.cpp:44
+	src/efield/efield.cpp:48
+autoscan: warning: missing AC_PROG_CC wanted by: 
+	config.h.in

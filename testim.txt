@@ -1,0 +1,30 @@
+start
+	telescope
+	primaryDiameter:2.4
+	primaryFRatio:15.1
+end
+# start here defining the input E-field
+start
+	efield
+	setSize:64, 64, 1
+	constantValue:1
+	wavelength:5.62175e-07
+end
+# ------------------------
+# the coronagraph
+# ------------------------
+start
+	coronagraph
+	# identity optical element at -1.4
+	start
+		mask
+		filename:testim.fits
+		position:0
+		# give it a name
+		name:entrance pupil
+		draw:preExecute
+		draw:postExecute
+		save:preExecute
+		save:postExecute
+	end
+end

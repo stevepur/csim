@@ -1,0 +1,181 @@
+#
+# PIAACMC coronagraph
+#
+start
+	telescope
+	primaryDiameter:2.4
+	primaryFRatio:15.1
+end
+# start here defining the input E-field
+start
+	efield
+	setSize:1024, 1024, 1
+	pointSource:1.0, 0.0, 0.0
+	pointSource:1e-7, 3.0, 1.0
+#	wavelength:5.62175e-07
+#	wavelengthBandwidth: 5.62175e-07, 0.1, 20
+	wavelengthBandwidth: 5.65e-07, 0.1, 20
+	beamRadiusPhysical:0.022
+	pixelScale:1.100e-04
+end
+# ------------------------
+# the coronagraph
+# ------------------------
+start
+	coronagraph
+	start
+		mask
+		filename:c1/pup_1024.fits
+		position:0
+		# give it a name
+		name:entrance pupil
+	end
+	# identity propagator
+	start
+		propagator:identity
+	end
+#	start
+#		mirror
+#		filename:c1/dans_abberr.fits
+#		position:0
+#		# give it a name
+#		name:TT mirror
+#	end
+	# fresnel propagator
+	start
+		fresnelPropagator
+		# give it a name
+		name:propagrator from TT mirror to PIAA m0
+		propagationSign:1
+#		draw:preExecute
+#		draw:postExecute
+#		save:postExecute
+	end
+	start
+		mirror
+		filename:c1/piaam0z.fits
+		position:1.199997
+		# give it a name
+		name:PIAA m0
+#		draw:onInit
+	end
+	start
+		fresnelPropagator
+		# give it a name
+		name:propagrator from PIAA m0 to PIAA m1
+		propagationSign:-1
+#		draw:preExecute
+#		draw:postExecute
+#		save:postExecute
+	end
+	start
+		mirror
+		filename:c1/piaam1z.fits
+		position:-1.102609
+		# give it a name
+		name:PIAA m1
+#		save:postExecute
+#		draw:onInit
+	end
+	# mask element
+	start
+		mask
+		filename:c1/dans_piaam1Mask.fits
+		position:-1.102609
+		# give it a name
+		name:PIAA m1 mask
+#		save:postExecute
+#		draw:onInit
+	end
+	start
+		fpmPupToLyot
+		name:FPM
+		position:-1.102609
+		focalRatio: 80
+		fRatioSign: -1
+		zoomFftSign: -1
+		disableForCalibration:on
+		start
+			fpmIntHexCMCForPupToLyot
+			zoomFactor: 16
+			start
+				complexHexMaskFPM
+				name:complexHexMaskFPM
+				maskNRings: 32
+				hexStep: 1
+				fpmArraySize: 2048
+				fpmScaleFactor: 0.9
+				hexGap: -0.0001
+				lambdaRef: 5.65e-07
+				fpmFRatio: 80
+				nSubPix: 64
+				fpmRadius: 0.0001356
+				sagFilename:wfirst_sags.fits
+				maskFilenameRoot:wfirst_base_mask_data
+			end
+		end
+#		draw:postExecute
+#		save:preExecute
+#		save:postExecute
+	end
+#	start
+#		breakExecution
+#	end
+	start
+		mask
+		filename:c1/dans_postFPMmask.fits
+		position:-1.102609
+		# give it a name
+		name:post FPM mask
+#		save:postExecute
+#		draw:onInit
+	end
+	start
+		fresnelPropagator
+		# give it a name
+		name:propagrator from FPM to pupil
+		propagationSign:1
+#		draw:preExecute
+#		draw:postExecute
+#		save:postExecute
+	end
+	start
+		mask
+		filename:c1/LyotStop0.fits
+		position:-0.092609
+		# give it a name
+		name:Lyot mask 0
+#		save:postExecute
+#		draw:onInit
+	end
+	start
+		mask
+		filename:c1/dans_backEndPupStop.fits
+		position:-0.092609
+		# give it a name
+		name:back-end pupil stop
+#		save:postExecute
+#		draw:onInit
+	end
+	start 
+		fraunhoferFocal
+		position:0
+		name:science CCD
+		referenceLambda:5.65e-7
+		samplesPerflD:2.4
+		FOVflD:418
+#		save:postExecute
+#		draw:postExecute
+#		draw:preExecute
+	end
+end
+#start
+#	execute
+#end
+start
+	makeContrastCurve
+	filename:contrastCurve.txt
+	draw:on
+	drawTo:12.0
+end
+

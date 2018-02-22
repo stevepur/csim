@@ -1,0 +1,159 @@
+#
+# PIAACMC coronagraph
+#
+start
+	telescope
+	primaryDiameter:2.4
+	primaryFRatio:15.1
+end
+# start here defining the input E-field
+start
+	efield
+	outputDirectory:testData/olivierPIAACMC/
+	setSize:1024, 1024, 1
+	constantValue:1
+	wavelength:5.62175e-07
+	beamRadiusPhysical:0.022
+	pixelScale:1.100e-04
+end
+# ------------------------
+# the coronagraph
+# ------------------------
+start
+	coronagraph
+	start
+		mask
+		filename:c1/pup_1024.fits
+		position:0
+		# give it a name
+		name:entrance pupil
+	end
+	start
+		mirror
+		filename:c1/dans_abberr.fits
+		position:0
+		# give it a name
+		name:TT mirror
+	end
+	# fresnel propagator
+	start
+		fresnelPropagator
+		# give it a name
+		name:propagrator from TT mirror to PIAA m0
+		propagationSign:-1
+#		draw:preExecute
+#		draw:postExecute
+#		save:postExecute
+		end
+	start
+		mirror
+		filename:c1/piaam0z.fits
+		position:1.199997
+		# give it a name
+		name:PIAA m0
+#		draw:onInit
+	end
+	start
+		fresnelPropagator
+		# give it a name
+		name:propagrator from PIAA m0 to PIAA m1
+#		draw:preExecute
+#		draw:postExecute
+#		save:postExecute
+	end
+	start
+		mirror
+		filename:c1/piaam1z.fits
+		position:-1.102609
+		# give it a name
+		name:PIAA m1
+#		save:postExecute
+#		draw:onInit
+	end
+	# mask element
+	start
+		mask
+		filename:c1/dans_piaam1Mask.fits
+		position:-1.102609
+		# give it a name
+		name:PIAA m1 mask
+#		save:postExecute
+#		draw:onInit
+	end
+	start
+		zoomDftPropagator
+		name:zoom DFT to FPM
+		position:-1.102609
+		disableForCalibration:on
+		dir: -1
+		zoomFactor: 16
+		save:preExecute
+		save:postExecute
+		end
+	start
+		zoomDftPropagator
+		name:zoom DFT from FPM
+		position:-1.102609
+		disableForCalibration:on
+		dir: 1
+		zoomFactor: 16
+		save:preExecute
+		save:postExecute
+	end
+	start
+		mask
+		filename:c1/dans_postFPMmask.fits
+		position:-1.102609
+		# give it a name
+		name:post FPM mask
+#		save:postExecute
+#		draw:onInit
+	end
+	start
+		fresnelPropagator
+		# give it a name
+		name:propagrator from FPM to pupil
+#		draw:preExecute
+#		draw:postExecute
+#		save:postExecute
+	end
+	start
+		mask
+		filename:c1/LyotStop0.fits
+		position:-0.092609
+		# give it a name
+		name:Lyot mask 0
+#		save:postExecute
+#		draw:onInit
+	end
+	start
+		mask
+		filename:c1/dans_backEndPupStop.fits
+		position:-0.092609
+		# give it a name
+		name:back-end pupil stop
+#		save:postExecute
+#		draw:onInit
+	end
+	start 
+		fraunhoferFocal
+		position:0
+		name:science CCD
+		referenceLambda:5.65e-7
+		samplesPerflD:2.4
+		FOVflD:418
+#		draw:postExecute
+#		draw:preExecute
+	end
+end
+start
+	execute
+end
+#start
+#	makeContrastCurve
+#	filename:contrastCurve.txt
+#	draw:on
+#	drawTo:12.0
+#end
+
+
