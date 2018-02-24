@@ -48,8 +48,8 @@ config.h.in~
 config.log
 config.status
 config.sub
-cconfigure
-onfigure.scan
+configure
+configure.scan
 contrastCurve.txt
 contrast_curve.txt
 csim.xcodeproj
@@ -61,7 +61,6 @@ gnuplot.txt
 gnuplotCommands.txt
 hex_positions.txt
 hex_positions_fpmIndex.txt
-hex_prototype.m
 hexdata1.mat
 hexdata_olivier_1.mat
 install-sh
@@ -70,10 +69,6 @@ ltmain.sh
 m4
 missing
 normalized_PSF.fits
-olivierPIAACMC.txt
-omptest.c
-pup2lyotIntHexMask.txt
-pup2lyotOliverMasks.txt
 stamp-h1
 testim.txt
 

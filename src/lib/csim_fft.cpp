@@ -17,8 +17,14 @@ static int fftPlanType = FFTW_ESTIMATE;
 //static int fftPlanType = FFTW_PATIENT;
 //static int fftPlanType = FFTW_EXHAUSTIVE;
 
-void init_fft_lib(void) {
+void init_fft_lib(bool computeFftWisdon) {
     fftw_import_wisdom_from_filename("fftw_wisdom.dat");
+    
+    if (computeFftWisdon) {
+        fftPlanType = FFTW_EXHAUSTIVE;
+        std::cout << "computing FFTW widsom" << std::endl;
+    } else
+        fftPlanType = FFTW_ESTIMATE;
 }
 
 void save_fft_wisdom(void) {

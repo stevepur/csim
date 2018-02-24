@@ -13,7 +13,7 @@
 #include "armadillo"
 #include "csim_geom.hpp"
 
-void init_fft_lib(void);
+void init_fft_lib(bool computeFftWisdom = false);
 void save_fft_wisdom(void);
 
 class fftPlanData {

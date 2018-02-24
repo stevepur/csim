@@ -13,8 +13,8 @@ start
 	pixelScale:2.400e-03
 	beamRadiusPhysical:1.2
 	arraySizePixels:1000
-#	wavelength:575e-9
-	wavelengthRange:546e-9, 604e-9, 1e-9
+	wavelength:575e-9
+#	wavelengthRange:546e-9, 604e-9, 1e-9
 	pointSource:1.0, 0.0, 0.0
 	end
 # ------------------------

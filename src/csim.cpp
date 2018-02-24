@@ -10,6 +10,7 @@
 #include <iostream>
 #include <string>
 #include <cstring>
+#include <unistd.h>
 #include "csim.hpp"
 #include "efield.hpp"
 #include "coronagraph.hpp"
@@ -21,9 +22,22 @@
 
 int main(int argn, char **argv) {
     arma::wall_clock timer;
+    bool computeFftWisdon = false;
+    int c;
     
-    init_fft_lib(); // initialize the FFTW library
-    initCommandSet initCommands(argv[1]); // parse the input script into command block sets
+    while ((c = getopt(argn, argv, "w")) != -1) {
+        switch (c) {
+            case 'w':
+                computeFftWisdon = true;
+                break;
+                
+            default:
+                ;
+        }
+    }
+    
+    init_fft_lib(computeFftWisdon); // initialize the FFTW library
+    initCommandSet initCommands(argv[optind]); // parse the input script into command block sets
     
     std::vector<initCommandSet*> cmdBlocks = initCommands.find_command_blocks(); // extract the top level of command blocks
     for (int i=0; i<cmdBlocks.size(); i++) { // for each command block, respond to the first command
@@ -52,5 +66,6 @@ int main(int argn, char **argv) {
             std::cout << "csim execution time: " << timer.toc() << " seconds" << std::endl;
         }
     }
-//    save_fft_wisdom();
+    if (computeFftWisdon)
+        save_fft_wisdom();
 }
