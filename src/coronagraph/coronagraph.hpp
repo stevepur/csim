@@ -17,7 +17,7 @@
 
 #include <list>
 #include "../elements/celem.hpp"
-#include "../efield/efield.hpp"
+#include "../data/efield.hpp"
 #include "../lib/csim_parser.hpp"
 
 // The coronagraph class is a sub-class of celem, so coronagraphs can be nested.
@@ -46,11 +46,15 @@ public:
     // setters/getters for the calibrationState flag
     void set_calibration_state(bool calibrationState) {calibrating = calibrationState;}
     bool get_calibration_state(void) {return calibrating;}
-
+    
+    // setters/getters for the optimization data
+    void get_optimization_data(const char *componentName, const char *dataName, void *data);
+    void set_optimization_data(const char *componentName, const char *dataName, void *data);
+    
     // Execute the coronagraph by calling the execute method
     // of each celem object in elemList, passing the efield pointer E.
     // Modifies the efield pointed to by E.
-    void execute(efield *inE, double time);
+    void execute(efield *inE, double time, bool showTimes = false);
 };
 
 // global pointer to the top-level coronagraph

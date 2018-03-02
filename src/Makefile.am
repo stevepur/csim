@@ -4,7 +4,7 @@ test_SOURCES = test.cpp
 
 csim_LDADD = lib/libcsim.la \
 coronagraph/libcoronagraph.la \
-efield/libefield.la \
+data/libdata.la \
 elements/libelements.la \
 telescope/libtelescope.la \
 tools/libtools.la \
@@ -19,14 +19,14 @@ csim_CPPFLAGS = \
 -I/Users/steve/programming_projects/gnu/fftw-3.3.7/include \
 -Ilib \
 -Icoronagraph \
--Iefield \
+-Idata \
 -Ielements \
 -Itelescope \
 -Itools
 
 test_LDADD = lib/libcsim.la \
 coronagraph/libcoronagraph.la \
-efield/libefield.la \
+data/libdata.la \
 elements/libelements.la \
 telescope/libtelescope.la \
 tools/libtools.la \
@@ -41,9 +41,9 @@ test_CPPFLAGS = \
 -I/Users/steve/programming_projects/gnu/fftw-3.3.7/include \
 -Ilib \
 -Icoronagraph \
--Iefield \
+-Idata \
 -Ielements \
 -Itelescope \
 -Itools
 
-SUBDIRS = lib coronagraph efield elements telescope tools
+SUBDIRS = lib coronagraph data elements telescope tools

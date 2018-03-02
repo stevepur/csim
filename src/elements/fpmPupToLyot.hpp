@@ -11,7 +11,6 @@
 
 #include "celem.hpp"
 #include "complexHexMaskFPM.hpp"
-#include "../efield/efield.hpp"
 #include "../lib/csim_lib.hpp"
 #include "armadillo"
 
@@ -30,6 +29,8 @@ public:
     virtual void set_fpmMatAmp(fpmPupToLyot *p2l, double lambda, int sl) {}
     virtual void apply_babinet(fpmPupToLyot *p2l) {}
     virtual void draw(const char *title = ""){}
+    virtual void get_optimization_data(const char *dataName, void *data) {}
+    virtual void set_optimization_data(const char *dataName, void *data) {}
     
 };
 
@@ -66,6 +67,10 @@ public:
     void initMask(const char *filenameAmp, const char *filenamePh) {}
     void set_geometry(fpmPupToLyot *prop, efield* E, double *lambda, double *lambdaFocalLength);
     void set_fpmMatAmp(fpmPupToLyot *p2l, double lambda, int sl);
+    
+    void get_optimization_data(const char *dataName, void *data);
+    void set_optimization_data(const char *dataName, void *data);
+    
     void apply_babinet(fpmPupToLyot *p2l);
     void draw(const char *title = "");
 };
@@ -134,6 +139,9 @@ public:
     
     efield* execute(efield* E, celem* prev, celem* next, double time);
     
+    void get_optimization_data(const char *dataName, void *data);
+    void set_optimization_data(const char *dataName, void *data);
+
     void draw(const char *title = "");
 };
 

@@ -19,16 +19,23 @@
 #include "csim_fits.hpp"
 #include "csim_fft.hpp"
 #include "contrastCurve.hpp"
+#include "regionContrast.hpp"
+#include "makeHexCFpmResponse.hpp"
 
 int main(int argn, char **argv) {
     arma::wall_clock timer;
     bool computeFftWisdon = false;
+    bool showTimes = false;
     int c;
     
-    while ((c = getopt(argn, argv, "w")) != -1) {
+    while ((c = getopt(argn, argv, "wt")) != -1) {
         switch (c) {
             case 'w':
                 computeFftWisdon = true;
+                break;
+                
+            case 't':
+                showTimes = true;
                 break;
                 
             default:
@@ -59,10 +66,20 @@ int main(int argn, char **argv) {
             contrastCurve *myContrastCurve = new contrastCurve(cmdBlocks[i]);
             myContrastCurve->make_contrast_curve();
         }
+        if (!strcmp(cmdBlocks[i]->commandList[0]->getCmdStr(), "regionContrast")) {
+            // create and execute the contrast curve tool
+            regionContrast *myRegionContrast = new regionContrast(cmdBlocks[i]);
+            myRegionContrast->compute_contrast();
+        }
+        if (!strcmp(cmdBlocks[i]->commandList[0]->getCmdStr(), "makeHexCFpmResponse")) {
+            // create and execute the contrast curve tool
+            makeHexCFpmResponse *myMakeHexCFpmResponse = new makeHexCFpmResponse(cmdBlocks[i]);
+            myMakeHexCFpmResponse->compute_response();
+        }
         if (!strcmp(cmdBlocks[i]->commandList[0]->getCmdStr(), "execute")) {
             // do a single execution of the global coronagraph
             timer.tic();
-            globalCoronagraph->execute(initialEfield, 0);
+            globalCoronagraph->execute(initialEfield, 0, showTimes);
             std::cout << "csim execution time: " << timer.toc() << " seconds" << std::endl;
         }
     }

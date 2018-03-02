@@ -302,7 +302,7 @@ arma::cx_cube czt::execute(arma::cx_cube& in, int outN, arma::vec pRatioX, arma:
     arma::cx_cube out(outN, outN, in.n_slices);
     
     for (int s=0; s<in.n_slices; s++) {
-        std::cout << "czt::execute cube: slice " << s << std::endl;
+//        std::cout << "czt::execute cube: slice " << s << std::endl;
         out.slice(s) = execute(in.slice(s), outN, pRatioX[s], startX[s], pRatioY[s], startY[s]);
     }
     return out;

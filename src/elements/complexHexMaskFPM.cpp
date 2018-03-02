@@ -55,11 +55,19 @@ arma::cx_mat complexHexMaskFPM::make_complex_intpolated_mask(double lambda, doub
                         interpSagVals(r,c,s) = fpmSags((int)interpHexNum(r,c,s));
                     else
                         interpSagVals(r,c,s) = 0.0;
+                    
+                    if (useOnlyThisHex > -1) {
+                        if ((int)interpHexNum(r,c,s) == useOnlyThisHex)
+                            interpNSubPixToUse(r,c,s) = interpNSubPix(r,c,s);
+                        else
+                            interpNSubPixToUse(r,c,s) = 0;
+                    }
                 }
     }
     
     // make the interpolated complex mask
-    arma::cx_mat complexIntMask = sum(interpNSubPix % exp(-2*M_PI*i1*2.0*interpSagVals/lambda), 2)/(nSubPix*nSubPix);
+    arma::cx_mat complexIntMask = sum(interpNSubPixToUse % exp(-2*M_PI*i1*2.0*interpSagVals/lambda), 2)/(nSubPix*nSubPix);
+//    draw_mat(arma::abs(complexIntMask), "mask");
 //    save_mat("used_complexIntMask.fits", complexIntMask);
     
     return complexIntMask;
@@ -120,6 +128,21 @@ void complexHexMaskFPM::load_sags(const char *filename){
     load_vec(filename, fpmSags);
 }
 
+void complexHexMaskFPM::get_optimization_data(const char *dataName, void *data) {
+    if (!strcmp(dataName, "sags"))
+        *(arma::vec *)data = fpmSags;
+}
+
+void complexHexMaskFPM::set_optimization_data(const char *dataName, void *data) {
+    if (!strcmp(dataName, "sags"))
+        fpmSags = *(arma::vec *)data;
+    else if (!strcmp(dataName, "useOnlyThisHex"))
+        useOnlyThisHex = *(int *)data;
+    
+    std::cout << "useOnlyThisHex = " << useOnlyThisHex << std::endl;
+    std::cout << "max sag = " << max(fpmSags) << ", min sag = " << min(fpmSags) << ", n sags = " << fpmSags.n_elem << std::endl;
+}
+
 void complexHexMaskFPM::init_mask(void) {
     int fileStatus = 0;
     
@@ -142,6 +165,7 @@ void complexHexMaskFPM::init_mask(void) {
         std::cout << "fpmScale = " << fpmScale << std::endl;
         interpSagVals = arma::zeros<arma::cube>(interpNSubPix.n_rows, interpNSubPix.n_cols, interpNSubPix.n_slices);
     }
+    interpNSubPixToUse = interpNSubPix;
 }
 
 void complexHexMaskFPM::compute_hex_centers(void) {

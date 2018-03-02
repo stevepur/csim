@@ -22,7 +22,7 @@ mask::mask(initCommandSet*& cmdBlock) {
 
 efield* mask::execute(efield* E, celem* prev, celem* next, double time) {
     std::complex<double> i1(0, 1);
-    std::cout << "executed binary mask " << name << std::endl;
+//    std::cout << "executed binary mask " << name << std::endl;
 
     pre_execute(E, prev, next, time);
     

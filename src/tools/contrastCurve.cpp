@@ -41,10 +41,6 @@ void contrastCurve::set(std::string fieldName, const char *arg) {
         filename = new char[strlen(arg)+1];
         strcpy(filename, arg);
     }
-    else if (fieldName == "specialNormalization") {
-        // arg is a double
-        specialNormalization = atof(arg);
-    }
     else if (fieldName == "draw") {
         // arg is a string
         if (!strcmp(arg, "on")) {
@@ -64,9 +60,6 @@ void contrastCurve::set(std::string fieldName, const char *arg) {
         else {
             drawTo = atof(arg);
         }
-    }
-    else if (fieldName == "filename") {
-        // arg is the .fits filename that contains the mask definition
     }
     else
         std::cout << "!!! contrastCurve bad set field name: " << fieldName << std::endl;
@@ -96,6 +89,7 @@ void contrastCurve::make_contrast_curve(void) {
     
     double lambda = calibEfield->lambdaData[(int) round(calibEfield->E[0][0]->n_slices/2)].lambda;
     double loD = globalTelescope->get("primaryfLength")*lambda/globalTelescope->get("primaryDiameter");
+    std::cout << "lambda = " << lambda << ", loD = " << loD << std::endl;
     
     arma::cube calibIntensity;
     calibIntensity.zeros(size(*(calibEfield->E[0][0])));
@@ -112,8 +106,6 @@ void contrastCurve::make_contrast_curve(void) {
 //        arma::vec calPy = calibEfield->arrayGeometry.pixelY/loD;
 //        draw_mat(log10(calibIntensitySum), calPx[0], calPx[calPx.n_elem-1], calPy[0], calPy[calPy.n_elem-1], "calibration PSF", "matlab");
 //    }
-    if (specialNormalization > 0)
-        calibMaxIntensity = specialNormalization;
     save_mat("calibration_PSF.fits", calibIntensitySum);
     
     arma::cube fullIntensity;

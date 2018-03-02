@@ -21,7 +21,7 @@ mirror::mirror(initCommandSet*& cmdBlock) {
 }
 
 efield* mirror::execute(efield* E, celem* prev, celem* next, double time) {
-    std::cout << "executed a mirror " << name << std::endl;
+//    std::cout << "executed a mirror " << name << std::endl;
     std::complex<double> i1(0, 1);
 
     pre_execute(E, prev, next, time);

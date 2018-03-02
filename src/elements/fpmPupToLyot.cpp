@@ -22,7 +22,7 @@ fpmPupToLyot::fpmPupToLyot(initCommandSet*& cmdBlock) {
 }
 
 efield* fpmPupToLyot::execute(efield* E, celem* prev, celem* next, double time) {
-    std::cout << "executed a fpmPupToLyot " << name << std::endl;
+//    std::cout << "executed a fpmPupToLyot " << name << std::endl;
     std::complex<double> i1(0, 1);
     std::complex<double> r1(1, 0);
     int nRowsE = E->E[0][0]->n_rows;
@@ -43,7 +43,7 @@ efield* fpmPupToLyot::execute(efield* E, celem* prev, celem* next, double time) 
 //    std::cout << "lambda = " << lambda[0] << ", lambdaFocalLength = " << lambdaFocalLength[0] << std::endl;
 //    maskGeom.print("maskGeom");
     for (int sl=0; sl<E->E[0][0]->n_slices; sl++) {
-        std::cout << "fpmPupToLyot::execute slice " << sl << ", lambda = " << lambda[sl] << std::endl;
+//        std::cout << "fpmPupToLyot::execute slice " << sl << ", lambda = " << lambda[sl] << std::endl;
         
 //        std::cout << "lambda = " << lambda[sl] << ", lambdaFocalLength = " << lambdaFocalLength[sl] << std::endl;
 //        std::cout << "calibrating: " << globalCoronagraph->get_calibration_state() << ", disableForCalibration: " << disableForCalibration << std::endl;
@@ -150,6 +150,14 @@ void fpmPupToLyot::set(std::string fieldName, const char *arg) {
         std::cout << "!!! fpmPupToLyot bad set field name: " << fieldName << std::endl;
 }
 
+void fpmPupToLyot::get_optimization_data(const char *dataName, void *data) {
+    mask->get_optimization_data(dataName, data);
+}
+
+void fpmPupToLyot::set_optimization_data(const char *dataName, void *data){
+    mask->set_optimization_data(dataName, data);
+}
+
 void fpmPupToLyot::draw(const char *title) {
     mask->draw(title);
 }
@@ -219,7 +227,7 @@ void fpmCMCForPupToLyot::set_geometry(fpmPupToLyot *p2l, efield* E, double *lamb
     
     //    E->print("in set_geometry");
     double cFRatio = p2l->focalRatio*2*E->beamRadiusPhysical;
-    std::cout << "cFRatio set to: " << cFRatio << std::endl;
+//    std::cout << "cFRatio set to: " << cFRatio << std::endl;
     for (int i=0; i<E->E[0][0]->n_slices; i++) {
         // lambdaFocalLength[i] = E->lambdaData[i].lambda*globalTelescope->get("primaryfRatio");
         //        std::cout << "lambda from E: " << E->lambdaData[i].lambda << std::endl;
@@ -299,7 +307,7 @@ void fpmIntHexCMCForPupToLyot::set_geometry(fpmPupToLyot *p2l, efield* E, double
     
     //    E->print("in set_geometry");
     double cFRatio = p2l->focalRatio*2*E->beamRadiusPhysical;
-    std::cout << "cFRatio set to: " << cFRatio << std::endl;
+//    std::cout << "cFRatio set to: " << cFRatio << std::endl;
     for (int i=0; i<E->E[0][0]->n_slices; i++) {
         // lambdaFocalLength[i] = E->lambdaData[i].lambda*globalTelescope->get("primaryfRatio");
         //        std::cout << "lambda from E: " << E->lambdaData[i].lambda << std::endl;
@@ -320,6 +328,14 @@ void fpmIntHexCMCForPupToLyot::set_fpmMatAmp(fpmPupToLyot *p2l, double lambda, i
     
     // for the CMC we pass mask - 1 to zoomFFT
     p2l->fpmMatAmp -= 1;
+}
+
+void fpmIntHexCMCForPupToLyot::get_optimization_data(const char *dataName, void *data) {
+    hexFPM->get_optimization_data(dataName, data);
+}
+
+void fpmIntHexCMCForPupToLyot::set_optimization_data(const char *dataName, void *data) {
+    hexFPM->set_optimization_data(dataName, data);
 }
 
 void fpmIntHexCMCForPupToLyot::apply_babinet(fpmPupToLyot *p2l){

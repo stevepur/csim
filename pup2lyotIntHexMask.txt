@@ -172,10 +172,28 @@ end
 #start
 #	execute
 #end
+#start
+#	makeContrastCurve
+#	filename:contrastCurve.txt
+#	draw:on
+#	drawTo:12.0
+#end
+#start
+#	regionContrast
+#	referenceLambda:5.65e-7
+#	radii:2,5
+#	anglesInDegrees:-40, 40
+#	filename:regionContrast.txt
+#	draw:on
+#end
 start
-	makeContrastCurve
-	filename:contrastCurve.txt
-	draw:on
-	drawTo:12.0
+	makeHexCFpmResponse
+	DataToOptimize:FPM,sags
+	start
+		regionContrast
+		referenceLambda:5.65e-7
+		radii:2,3
+		anglesInDegrees:-15,15
+	end
 end
 

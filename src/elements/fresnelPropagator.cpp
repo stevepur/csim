@@ -21,7 +21,7 @@ fresnelPropagator::fresnelPropagator(initCommandSet*& cmdBlock) {
 }
 
 efield* fresnelPropagator::execute(efield* E, celem* prev, celem* next, double time) {
-    std::cout << "executed fresnelPropagator " << name << std::endl;
+//    std::cout << "executed fresnelPropagator " << name << std::endl;
     std::complex<double> i1(0, 1);
     double z;
     
@@ -30,7 +30,7 @@ efield* fresnelPropagator::execute(efield* E, celem* prev, celem* next, double t
     pre_execute(E, prev, next, time);
     
     z = propagationSign*abs(next->position - prev->position);
-    std::cout << "propagation distance " << z << std::endl;
+//    std::cout << "propagation distance " << z << std::endl;
 
     double *lambda = new double[E->E[0][0]->n_slices];
     for (int i=0; i<E->E[0][0]->n_slices; i++)

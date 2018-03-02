@@ -9,14 +9,13 @@
 #ifndef contrastCurve_hpp
 #define contrastCurve_hpp
 
-#include "../efield/efield.hpp"
+#include "../data/efield.hpp"
 
 class contrastCurve {
     int pixelSampling = 1;
     char *filename = NULL;
     bool draw = false;
     double drawTo = -1;
-    double specialNormalization = 0;
     
 public:
 

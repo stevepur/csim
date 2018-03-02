@@ -9,7 +9,7 @@
 #ifndef celem_hpp
 #define celem_hpp
 
-#include "../efield/efield.hpp"
+#include "../data/efield.hpp"
 #include "../lib/csim_parser.hpp"
 
 class celem {
@@ -36,6 +36,8 @@ public:
     void post_execute(efield* E, celem* prev, celem* next, double time);
     void post_init(void);
     bool set(std::string fieldName, const char *arg);
+    virtual void get_optimization_data(const char *dataName, void *data) {}
+    virtual void set_optimization_data(const char *dataName, void *data) {}
     void print(const char *hdr = "");
     virtual void draw(const char *title);
 };

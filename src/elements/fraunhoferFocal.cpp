@@ -21,7 +21,7 @@ fraunhoferFocal::fraunhoferFocal(initCommandSet*& cmdBlock) {
 }
 
 efield* fraunhoferFocal::execute(efield* E, celem* prev, celem* next, double time) {
-    std::cout << "executed fraunhoferFocal " << name << std::endl;
+//    std::cout << "executed fraunhoferFocal " << name << std::endl;
     double z;
     
     pre_execute(E, prev, next, time);
@@ -31,7 +31,7 @@ efield* fraunhoferFocal::execute(efield* E, celem* prev, celem* next, double tim
     
     assert(E->beamRadiusPhysical > 0);
     
-    E->print("in fraunhoferFocal::execute: ");
+//    E->print("in fraunhoferFocal::execute: ");
     double *lambdaFocalLength = new double[E->E[0][0]->n_slices];
 //    std::cout << "lambdaFocalLength :" << std::endl;
     for (int i=0; i<E->E[0][0]->n_slices; i++) {

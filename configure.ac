@@ -10,7 +10,7 @@ Makefile
 src/Makefile
 src/lib/Makefile
 src/coronagraph/Makefile
-src/efield/Makefile
+src/data/Makefile
 src/elements/Makefile
 src/telescope/Makefile
 src/tools/Makefile

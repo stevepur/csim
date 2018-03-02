@@ -149,7 +149,7 @@ void coronagraph::init(initCommandSet*& cmdBlocks) {
 // The previous and next celems are supplied for celems like propagatorss that need to know
 // the physical distance between the previous and next celems.
 // MODIFIES THE CONTENTS OF THE EFIELD POINTED TO BY inE
-void coronagraph::execute(efield *inE, double time) {
+void coronagraph::execute(efield *inE, double time, bool showTimes) {
     arma::wall_clock timer;
 
     E = inE;
@@ -159,16 +159,38 @@ void coronagraph::execute(efield *inE, double time) {
         timer.tic();
         // if we're the first celem in elemList...
         if (it == elemList.begin()) {
-            std::cout << "first element" << std::endl;
+//            std::cout << "first element" << std::endl;
             E = (*it)->execute(E, NULL, *std::next(it), time);
         }
         // if we're the last celem in elemList...
         else if (it == std::prev(elemList.end())){
-            std::cout << "last element" << std::endl;
+//            std::cout << "last element" << std::endl;
             E = (*it)->execute(E, *std::prev(it), NULL, time);
         }
         else // we're inside the list
             E = (*it)->execute(E, *std::prev(it), *std::next(it), time);
-        std::cout << "======================= executing " << (*it)->name << " time: " << timer.toc() << " seconds" << std::endl;
+        
+        if (showTimes)
+            std::cout << "======================= executing " << (*it)->name << " time: " << timer.toc() << " seconds" << std::endl;
     }
 }
+
+// get optimization data dataName from the component componentName
+void coronagraph::get_optimization_data(const char *componentName, const char *dataName, void *data) {
+    for (std::list<celem*>::iterator it = elemList.begin(); it != elemList.end(); ++it) {
+        if (!strcmp((*it)->name, componentName))
+            (*it)->get_optimization_data(dataName, data);
+    }
+}
+
+// set optimization data dataName from the component componentName
+void coronagraph::set_optimization_data(const char *componentName, const char *dataName, void *data) {
+    for (std::list<celem*>::iterator it = elemList.begin(); it != elemList.end(); ++it) {
+        if (!strcmp((*it)->name, componentName))
+            (*it)->set_optimization_data(dataName, data);
+    }
+}
+
+
+
+
