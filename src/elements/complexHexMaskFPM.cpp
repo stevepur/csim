@@ -51,15 +51,15 @@ arma::cx_mat complexHexMaskFPM::make_complex_intpolated_mask(double lambda, doub
         for (int r=0; r<interpHexNum.n_rows; r++)
             for (int c=0; c<interpHexNum.n_cols; c++)
                 for (int s=0; s<interpHexNum.n_slices; s++) {
-                    if (interpHexNum(r,c,s) > -1)
+                    if (interpHexNum(r,c,s) > -1) // is this a hex in the mask?
                         interpSagVals(r,c,s) = fpmSags((int)interpHexNum(r,c,s));
                     else
-                        interpSagVals(r,c,s) = 0.0;
+                        interpSagVals(r,c,s) = 0.0; // set the sags outside the physical mask to zero
                     
                     if (useOnlyThisHex > -1) {
                         if ((int)interpHexNum(r,c,s) == useOnlyThisHex)
                             interpNSubPixToUse(r,c,s) = interpNSubPix(r,c,s);
-                        else
+                        else if ((int)interpHexNum(r,c,s) > -1)
                             interpNSubPixToUse(r,c,s) = 0;
                     }
                 }
@@ -68,7 +68,10 @@ arma::cx_mat complexHexMaskFPM::make_complex_intpolated_mask(double lambda, doub
     // make the interpolated complex mask
     arma::cx_mat complexIntMask = sum(interpNSubPixToUse % exp(-2*M_PI*i1*2.0*interpSagVals/lambda), 2)/(nSubPix*nSubPix);
 //    draw_mat(arma::abs(complexIntMask), "mask");
-//    save_mat("used_complexIntMask.fits", complexIntMask);
+    char mName[200];
+    sprintf(mName, "useOnlyThisHexMask_%d.fits", useOnlyThisHex);
+    save_mat(mName, complexIntMask, "amPh");
+//    save_mat(mName, complexIntMask, "reIm");
     
     return complexIntMask;
 }
@@ -120,6 +123,13 @@ void complexHexMaskFPM::set(std::string fieldName, const char *arg) {
     } else if (fieldName == "maskFilenameRoot") {
         // arg is one filename root, which will get additions for the mask data files
         maskFilenameRoot = arg;
+    } else if (fieldName == "setSag") {
+        int sagIndex = 0;
+        float sagVal = 0.0;
+        sscanf(arg, "%d, %f", &sagIndex, &sagVal);
+        fpmSags(sagIndex) = sagVal;
+    } else if (fieldName == "useOnlyThisHex") {
+        useOnlyThisHex = atoi(arg);
     } else if (!found)
         std::cout << "!!! complexHexMaskFPM bad set field name: " << fieldName << std::endl;
 }
@@ -140,7 +150,7 @@ void complexHexMaskFPM::set_optimization_data(const char *dataName, void *data) 
         useOnlyThisHex = *(int *)data;
     
     std::cout << "useOnlyThisHex = " << useOnlyThisHex << std::endl;
-    std::cout << "max sag = " << max(fpmSags) << ", min sag = " << min(fpmSags) << ", n sags = " << fpmSags.n_elem << std::endl;
+//    std::cout << "max sag = " << max(fpmSags) << ", min sag = " << min(fpmSags) << ", n sags = " << fpmSags.n_elem << std::endl;
 }
 
 void complexHexMaskFPM::init_mask(void) {

@@ -16,6 +16,7 @@
 #include "../coronagraph/coronagraph.hpp"
 #include "../telescope/telescope.hpp"
 #include "../lib/csim_lib.hpp"
+#include "../data/responseData.hpp"
 
 makeHexCFpmResponse::makeHexCFpmResponse() {
 }
@@ -118,10 +119,12 @@ void makeHexCFpmResponse::compute_response(void) {
     globalCoronagraph->set_optimization_data(componentName, dataName, &curSag);
     
     arma::uvec regionPixelIndex;
-    arma::vec regionPixelX;
-    arma::vec regionPixelY;
     // be careful to use the result of an execution so we're using the output CCD geometry
-    region->get_region_pixels(calibEfield, regionPixelIndex, regionPixelX, regionPixelY);
+    region->get_region_pixels(calibEfield, regionPixelIndex);
+    
+    responseData *response = new responseData(regionPixelIndex.n_elem, nSags, calibEfield->E[0][0]->n_slices, calibEfield->E[0].size(), calibEfield->E.size());
+    response->set((std::string)"outputDirectory", "testResponse");
+    response->print("response data");
     
     globalCoronagraph->set_calibration_state(false);
     for (int sag=0; sag<nSags; sag++){
@@ -135,20 +138,36 @@ void makeHexCFpmResponse::compute_response(void) {
         globalCoronagraph->execute(fullEfield, 0);
         std::cout << "make hex response function csim execution time: " << timer.toc() << " seconds" << std::endl;
         
-        arma::cube fullIntensity;
-        fullIntensity.zeros(size(*(calibEfield->E[0][0])));
         for (int s=0; s<fullEfield->E.size(); s++) {
             for (int p=0; p<fullEfield->E[s].size(); p++) {
-                fullIntensity += real(*(fullEfield->E[s][p]) % arma::conj(*(fullEfield->E[s][p])));
+                for (int sl=0; sl<response->M[s][p]->n_slices; sl++) {
+                    arma::cx_mat smat = fullEfield->E[s][p]->slice(sl);
+                    arma::cx_mat tmat = response->M[s][p]->slice(sl);
+                    tmat(arma::span::all, sag) = smat(regionPixelIndex);
+                    response->M[s][p]->slice(sl) = tmat;
+                }
             }
         }
-        arma::mat fullIntensitySum = sum(fullIntensity, 2)/calibMaxIntensity;
-        std::cout << "fullMaxIntensity = " << max(max(fullIntensitySum)) << std::endl;
         
-        delete fullEField;
+
+        delete fullEfield;
        
     }
+//    draw_mat(real(response->M[0][0]->slice(0)), "real responese");
+//    draw_mat(imag(response->M[0][0]->slice(0)), "imag responese");
+    save_mat("response0.fits", response->M[0][0]->slice(0));
+    response->save();
     
+//    arma::cube fullIntensity;
+//    fullIntensity.zeros(size(*(calibEfield->E[0][0])));
+//    for (int s=0; s<fullEfield->E.size(); s++) {
+//        for (int p=0; p<fullEfield->E[s].size(); p++) {
+//            fullIntensity += real(*(fullEfield->E[s][p]) % arma::conj(*(fullEfield->E[s][p])));
+//        }
+//    }
+//    arma::mat fullIntensitySum = sum(fullIntensity, 2)/calibMaxIntensity;
+//    std::cout << "fullMaxIntensity = " << max(max(fullIntensitySum)) << std::endl;
+   
     
     
     

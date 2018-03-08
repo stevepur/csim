@@ -168,7 +168,7 @@ void load_vec(const char *filename, arma::vec& fillVec, int verbose) {
             std::cout << "dim " << i << ": " << dims[i] << std::endl;
     }
     if (!(nDims == 1 || dims[1] == 1)) {
-        std::cout << "vec file has other than 1 dimension1!!" << std::endl;
+        std::cout << "vec file has other than 1 dimension!!" << std::endl;
         assert(NULL);
     }
     fillVec.set_size(dims[0]);
@@ -233,19 +233,50 @@ void save_cube(const char *filename, arma::cube& saveCube, int verbose) {
     int nDims = 3;
     long dims[3];
     int dataType = TDOUBLE;
-    arma::cube ct = saveCube;
+    arma::cube ct(saveCube.n_cols, saveCube.n_rows, saveCube.n_slices); // need to create the transpose
+    
+    if (verbose)
+        std::cout << "transposing" << std::endl;
+    // fits is transposed so...
+    for (int s=0; s<saveCube.n_slices; s++) {
+        ct.slice(s) = strans(saveCube.slice(s));
+    }
     double *data = (double(*))&ct(0,0,0);
     
-    // fits is transposed so...
-    for (int s=0; s<ct.n_slices; s++) {
-        inplace_strans(ct.slice(s));
-    }
-    
-    dims[0] = saveCube.n_rows; // but use original row/column sizes
-    dims[1] = saveCube.n_cols;
+    if (verbose)
+        std::cout << "setting dimensions" << std::endl;
+    dims[0] = saveCube.n_cols; // but use original row/column sizes
+    dims[1] = saveCube.n_rows;
     dims[2] = saveCube.n_slices;
     
+    if (verbose)
+        std::cout << "saving array" << std::endl;
     write_fits_array(filename, data, nDims, dims, dataType, verbose);
+}
+
+void save_cube(const char *filename, arma::cx_cube& saveCube, int verbose) {
+    std::string fString = filename;
+    char nameRoot[200];
+    char saveName[200];
+    
+    int fitPos = fString.find(".fits");
+    if (fitPos > 0) {
+        fString.copy(nameRoot, fitPos);
+        nameRoot[fitPos] = '\0';
+    } else
+        strcpy(nameRoot, filename);
+    if (verbose)
+        std::cout << "nameRoot: " << nameRoot << std::endl;
+    
+    arma::cube reCube = real(saveCube);
+    arma::cube imCube = imag(saveCube);
+
+    strcpy(saveName, nameRoot);
+    strcat(saveName, "_re.fits");
+    save_cube(saveName, reCube, verbose);
+    strcpy(saveName, nameRoot);
+    strcat(saveName, "_im.fits");
+    save_cube(saveName, imCube, verbose);
 }
 
 void save_cube(const char *filename, arma::icube& saveCube, int verbose) {
@@ -330,6 +361,35 @@ int load_cube(const char *filename, arma::cube& fillCube, int verbose) {
     return 0;
 }
 
+int load_cube(const char *filename, arma::cx_cube& fillCube, int verbose) {
+    std::string fString = filename;
+    char nameRoot[200];
+    char loadName[200];
+    std::complex<double> i1(0, 1);
+    
+    int fitPos = fString.find(".fits");
+    if (fitPos > 0) {
+        fString.copy(nameRoot, fitPos);
+        nameRoot[fitPos] = '\0';
+    } else
+        strcpy(nameRoot, filename);
+    if (verbose)
+        std::cout << "nameRoot: " << nameRoot << std::endl;
+    
+    arma::cube reCube;
+    arma::cube imCube;
+    
+    strcpy(loadName, nameRoot);
+    strcat(loadName, "_re.fits");
+    load_cube(filename, reCube, verbose);
+    strcpy(loadName, nameRoot);
+    strcat(loadName, "_im.fits");
+    load_cube(filename, imCube, verbose);
+    
+    fillCube.set_size(reCube.n_rows, reCube.n_cols, reCube.n_slices);
+    fillCube.set_real(reCube);
+    fillCube.set_imag(imCube);
+}
 
 int load_cube(const char *filename, arma::icube& fillCube, int verbose) {
     void *data = NULL;
@@ -456,10 +516,24 @@ void save_mat(const char *filename, arma::cx_mat& saveMat, const char *saveType,
         tmp = arg(saveMat);
         save_mat(saveName, tmp, verbose);
     }
-    
 }
 
+
+void save_vec(const char *filename, arma::vec& saveVec, int verbose) {
+    if (verbose)
+        std::cout << "saving the vector " << filename << std::endl;
+    arma::vec tVec = saveVec;
+    double *data = (double(*))&tVec(0);
+    int nDims = 1;
+    long dims[1];
+    int dataType = TDOUBLE;
     
+    dims[0] = saveVec.n_elem;
+    
+    write_fits_array(filename, data, nDims, dims, dataType, verbose);
+}
+
+
     
     
     

@@ -31,6 +31,7 @@ public:
     void set_loD(void);
     
     void execute(efield *inE, double time);
+    void get_region_pixels(efield *E, arma::uvec& pixelIndex);
     void get_region_pixels(efield *E, arma::uvec& pixelIndex, arma::vec& pixelX, arma::vec& pixelY);
     void compute_contrast(void);
     void print(const char *hdr = NULL);

@@ -78,7 +78,7 @@ void regionContrast::set(std::string fieldName, const char *arg) {
     
 }
 
-void regionContrast::get_region_pixels(efield *E, arma::uvec& pixelIndex, arma::vec& pixelX, arma::vec& pixelY) {
+void regionContrast::get_region_pixels(efield *E, arma::uvec& pixelIndex) {
     
     arma::umat inSample = (E->arrayGeometry.pixelRR/loD > radius1)
     % (E->arrayGeometry.pixelRR/loD < radius2)
@@ -86,6 +86,11 @@ void regionContrast::get_region_pixels(efield *E, arma::uvec& pixelIndex, arma::
     % (E->arrayGeometry.pixelTT < angle2*M_PI/180);
     
     pixelIndex = find(inSample);
+}
+
+void regionContrast::get_region_pixels(efield *E, arma::uvec& pixelIndex, arma::vec& pixelX, arma::vec& pixelY) {
+    
+    get_region_pixels(E, pixelIndex);
     pixelX = E->arrayGeometry.pixelXX(pixelIndex);
     pixelY = E->arrayGeometry.pixelYY(pixelIndex);
 }
@@ -122,6 +127,17 @@ void regionContrast::compute_contrast(void) {
     globalCoronagraph->execute(fullEfield, 0);
     std::cout << "contrast curve csim execution time: " << timer.toc() << " seconds" << std::endl;
     
+    arma::uvec pixelIndex;
+    arma::vec pixelX;
+    arma::vec pixelY;
+    get_region_pixels(fullEfield, pixelIndex, pixelX, pixelY);
+    
+    arma::cx_mat emat = *(fullEfield->E[0][0]);
+    arma::vec evecRe = real(emat(pixelIndex));
+    arma::vec evecIm = imag(emat(pixelIndex));
+    save_vec("trueEVecRe.fits", evecRe);
+    save_vec("trueEVecIm.fits", evecIm);
+
     arma::cube calibIntensity;
     calibIntensity.zeros(size(*(calibEfield->E[0][0])));
     for (int s=0; s<calibEfield->E.size(); s++) {
@@ -146,11 +162,6 @@ void regionContrast::compute_contrast(void) {
     arma::vec fullPy = fullEfield->arrayGeometry.pixelY/loD;
     arma::mat fullIntensitySum = sum(fullIntensity, 2)/calibMaxIntensity;
     std::cout << "fullMaxIntensity = " << max(max(fullIntensitySum)) << std::endl;
-    
-    arma::uvec pixelIndex;
-    arma::vec pixelX;
-    arma::vec pixelY;
-    get_region_pixels(fullEfield, pixelIndex, pixelX, pixelY);
 
     if (draw) {
         arma::umat matIndex = arma::ind2sub(size(fullIntensitySum), pixelIndex);

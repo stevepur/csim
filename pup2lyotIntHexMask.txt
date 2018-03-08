@@ -110,8 +110,11 @@ start
 				fpmFRatio: 80
 				nSubPix: 64
 				fpmRadius: 0.0001356
-				sagFilename:wfirst_sags.fits
+#				sagFilename:wfirst_sags.fits
+				sagFilename:oneSag.fits
 				maskFilenameRoot:wfirst_base_mask_data
+#				setSag:0, 1e-7
+#				useOnlyThisHex:0
 			end
 		end
 #		draw:postExecute
@@ -178,22 +181,22 @@ end
 #	draw:on
 #	drawTo:12.0
 #end
-#start
-#	regionContrast
-#	referenceLambda:5.65e-7
-#	radii:2,5
-#	anglesInDegrees:-40, 40
-#	filename:regionContrast.txt
-#	draw:on
-#end
+start
+	regionContrast
+	referenceLambda:5.65e-7
+	radii:1,3
+	anglesInDegrees:-20,20
+	filename:regionContrast.txt
+	draw:on
+end
 start
 	makeHexCFpmResponse
 	DataToOptimize:FPM,sags
 	start
 		regionContrast
 		referenceLambda:5.65e-7
-		radii:2,3
-		anglesInDegrees:-15,15
+		radii:1,3
+		anglesInDegrees:-20,20
 	end
 end
 
