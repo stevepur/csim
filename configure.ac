@@ -12,6 +12,7 @@ src/lib/Makefile
 src/coronagraph/Makefile
 src/data/Makefile
 src/elements/Makefile
+src/optimization/Makefile
 src/telescope/Makefile
 src/tools/Makefile
 ])

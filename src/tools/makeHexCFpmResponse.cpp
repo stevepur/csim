@@ -112,23 +112,37 @@ void makeHexCFpmResponse::compute_response(void) {
     globalCoronagraph->get_optimization_data(componentName, dataName, &origHexSags);
     
     int nSags = origHexSags.n_elem;
+//    nSags = 1;
     std::cout << "nSags = " << nSags << std::endl;
    
     // set all sags to zero
     arma::vec curSag = arma::zeros(size(origHexSags));
     globalCoronagraph->set_optimization_data(componentName, dataName, &curSag);
     
+    region->print("response region:");
     arma::uvec regionPixelIndex;
     // be careful to use the result of an execution so we're using the output CCD geometry
     region->get_region_pixels(calibEfield, regionPixelIndex);
+//    std::cout << "there are " << regionPixelIndex.n_elem << " pixels: " << std::endl;
+//    std::cout << regionPixelIndex << std::endl;
     
-    responseData *response = new responseData(regionPixelIndex.n_elem, nSags, calibEfield->E[0][0]->n_slices, calibEfield->E[0].size(), calibEfield->E.size());
+//    responseData *response = new responseData(regionPixelIndex.n_elem, nSags, calibEfield->E[0][0]->n_slices, calibEfield->E[0].size(), calibEfield->E.size());
+    responseData *response = new responseData(regionPixelIndex.n_elem, nSags+1, calibEfield->E[0][0]->n_slices, calibEfield->E[0].size(), calibEfield->E.size());
     response->set((std::string)"outputDirectory", "testResponse");
     response->print("response data");
     
     globalCoronagraph->set_calibration_state(false);
-    for (int sag=0; sag<nSags; sag++){
+    for (int sag=0; sag<=nSags; sag++){
+//    for (int sag=0; sag<nSags; sag++){
         globalCoronagraph->set_optimization_data(componentName, "useOnlyThisHex", &sag);
+        
+        bool doBabinet = false;
+        if (sag < nSags)
+            doBabinet = false;
+        else if (sag == nSags)
+            doBabinet = true;
+            
+        globalCoronagraph->set_optimization_data(componentName, "setBabinet", &doBabinet);
         
         // run the coronagraph
         efield *fullEfield = new efield(*initialEfield);
@@ -155,98 +169,8 @@ void makeHexCFpmResponse::compute_response(void) {
     }
 //    draw_mat(real(response->M[0][0]->slice(0)), "real responese");
 //    draw_mat(imag(response->M[0][0]->slice(0)), "imag responese");
-    save_mat("response0.fits", response->M[0][0]->slice(0));
+//    save_mat("response0.fits", response->M[0][0]->slice(0));
     response->save();
     
-//    arma::cube fullIntensity;
-//    fullIntensity.zeros(size(*(calibEfield->E[0][0])));
-//    for (int s=0; s<fullEfield->E.size(); s++) {
-//        for (int p=0; p<fullEfield->E[s].size(); p++) {
-//            fullIntensity += real(*(fullEfield->E[s][p]) % arma::conj(*(fullEfield->E[s][p])));
-//        }
-//    }
-//    arma::mat fullIntensitySum = sum(fullIntensity, 2)/calibMaxIntensity;
-//    std::cout << "fullMaxIntensity = " << max(max(fullIntensitySum)) << std::endl;
-   
-    
-    
-    
-    
-    
-    /*
-    efield *fullEfield = new efield(*initialEfield);
-    fullEfield->set("name", "FPM Efield");
-    
-    globalCoronagraph->set_calibration_state(true);
-    timer.tic();
-    globalCoronagraph->execute(calibEfield, 0);
-    std::cout << "contrast curve calibration csim execution time: " << timer.toc() << " seconds" << std::endl;
-    
-    globalCoronagraph->set_calibration_state(false);
-    timer.tic();
-    globalCoronagraph->execute(fullEfield, 0);
-    std::cout << "contrast curve csim execution time: " << timer.toc() << " seconds" << std::endl;
-    
-    
-    // if referenceLambda is not defined, set it to the average of lambdas in E
-    if (referenceLambda == -1.0) {
-        int nLambdas = calibEfield->E[0][0]->n_slices;
-        double lambdaSum = 0.0;
-        for (int i=0; i<nLambdas; i++)
-            lambdaSum += calibEfield->lambdaData[i].get_wavelength();
-        referenceLambda = lambdaSum/nLambdas;
-    }
-    double loD = globalTelescope->get("primaryfLength")*referenceLambda/globalTelescope->get("primaryDiameter");
-    std::cout << "referenceLambda = " << referenceLambda << ", loD = " << loD << std::endl;
-    
-    save_mat("calibration_PSF.fits", calibIntensitySum);
-    
-    arma::cube fullIntensity;
-    fullIntensity.zeros(size(*(calibEfield->E[0][0])));
-    for (int s=0; s<fullEfield->E.size(); s++) {
-        for (int p=0; p<fullEfield->E[s].size(); p++) {
-            fullIntensity += real(*(fullEfield->E[s][p]) % arma::conj(*(fullEfield->E[s][p])));
-        }
-    }
-    arma::vec fullPx = fullEfield->arrayGeometry.pixelX/loD;
-    arma::vec fullPy = fullEfield->arrayGeometry.pixelY/loD;
-    arma::mat fullIntensitySum = sum(fullIntensity, 2)/calibMaxIntensity;
-    std::cout << "fullMaxIntensity = " << max(max(fullIntensitySum)) << std::endl;
-    
-    arma::uvec pixelIndex;
-    arma::vec pixelX;
-    arma::vec pixelY;
-    get_region_pixels(fullEfield, loD, pixelIndex, pixelX, pixelY);
-
-    if (draw) {
-        arma::umat matIndex = arma::ind2sub(size(fullIntensitySum), pixelIndex);
-        int minRow = min(matIndex(0,arma::span::all));
-        int maxRow = max(matIndex(0,arma::span::all));
-        int minCol = min(matIndex(1,arma::span::all));
-        int maxCol = max(matIndex(1,arma::span::all));
-        
-        std::cout << "bounding indices: " << minRow << ", " << maxRow << ", " << minCol << ", " << maxCol << std::endl;
-        
-        arma::mat drawContrastMat = zeros(arma::size(fullIntensitySum));
-        for (int i=0; i<pixelIndex.n_elem; i++)
-            drawContrastMat(pixelIndex(i)) = 1.0;
-        drawContrastMat = drawContrastMat % fullIntensitySum;
-        arma::mat contrastRegionExtract = drawContrastMat(arma::span(minRow,maxRow),arma::span(minCol,maxCol));
-        draw_mat(log10(contrastRegionExtract), arma::min(pixelX/loD), arma::max(pixelX/loD), arma::min(pixelY/loD), arma::max(pixelY/loD), "normalized full coronagraph PSF", "matlab");
-    }
-    
-    
-    save_mat("normalized_PSF.fits", fullIntensitySum);
-    
-    double contrast = arma::mean(fullIntensitySum(pixelIndex));
-    std::cout << "region contrast: " << contrast << std::endl;
-
-    assert(filename != NULL);
-    FILE *fid = fopen(filename, "w");
-    fprintf(fid, "%f, %f\n", angle1, angle2);
-    fprintf(fid, "%f, %f\n", radius1, radius2);
-    fprintf(fid, "%e\n", contrast);
-    fclose(fid);
-     */
 }
 

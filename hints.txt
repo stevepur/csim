@@ -18,6 +18,10 @@ autoreconf --install
 make clean
 make
 
+# to enable gpu
+export LD_LIBRARY_PATH=/Developer/NVIDIA/CUDA-8.0/lib
+export NVBLAS_CONFIG_FILE=/Users/steve/programming_projects/gnu/armadillo-7.800.1/examples/nvblas.conf 
+
 # default
 autoreconf --install
 ./configure

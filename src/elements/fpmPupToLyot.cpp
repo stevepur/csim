@@ -172,6 +172,7 @@ fpmCMCForPupToLyot::fpmCMCForPupToLyot(fpmPupToLyot *p2l, initCommandSet*& cmdBl
         set(p2l, cmdBlock->commandList[c]->getCmdStr(),
             cmdBlock->commandList[c]->getArgStr());
     }
+    set_babinet(true); // turn on babinet for this mask
 }
 
 void fpmCMCForPupToLyot::set(fpmPupToLyot *p2l, std::string fieldName, const char *arg) {
@@ -249,11 +250,13 @@ void fpmCMCForPupToLyot::set_fpmMatAmp(fpmPupToLyot *p2l, double lambda, int sl)
         p2l->fpmMatAmp = complexMaskCube.slice(maskIndex);
     
     // for the CMC we pass mask - 1 to zoomFFT
-    p2l->fpmMatAmp -= 1;
+    if (doBabinet)
+        p2l->fpmMatAmp -= 1;
 }
 
 void fpmCMCForPupToLyot::apply_babinet(fpmPupToLyot *p2l){
-    p2l->fftMHatTimesfftPaddedE += p2l->paddedE;
+    if (doBabinet)
+        p2l->fftMHatTimesfftPaddedE += p2l->paddedE;
 }
 
 void fpmCMCForPupToLyot::draw(const char *title) {
@@ -283,6 +286,7 @@ fpmIntHexCMCForPupToLyot::fpmIntHexCMCForPupToLyot(fpmPupToLyot *p2l, initComman
             }
         }
     }
+    set_babinet(true); // turn on babinet for this mask
 }
 
 void fpmIntHexCMCForPupToLyot::set(fpmPupToLyot *p2l, std::string fieldName, const char *arg) {
@@ -327,7 +331,8 @@ void fpmIntHexCMCForPupToLyot::set_fpmMatAmp(fpmPupToLyot *p2l, double lambda, i
         p2l->fpmMatAmp = hexFPM->make_complex_intpolated_mask(lambda, 0.0);
     
     // for the CMC we pass mask - 1 to zoomFFT
-    p2l->fpmMatAmp -= 1;
+    if (doBabinet)
+        p2l->fpmMatAmp -= 1;
 }
 
 void fpmIntHexCMCForPupToLyot::get_optimization_data(const char *dataName, void *data) {
@@ -335,11 +340,15 @@ void fpmIntHexCMCForPupToLyot::get_optimization_data(const char *dataName, void 
 }
 
 void fpmIntHexCMCForPupToLyot::set_optimization_data(const char *dataName, void *data) {
-    hexFPM->set_optimization_data(dataName, data);
+    if (!strcmp(dataName, "setBabinet"))
+        doBabinet = *(bool *)data;
+    else
+        hexFPM->set_optimization_data(dataName, data);
 }
 
 void fpmIntHexCMCForPupToLyot::apply_babinet(fpmPupToLyot *p2l){
-    p2l->fftMHatTimesfftPaddedE += p2l->paddedE;
+    if (doBabinet)
+        p2l->fftMHatTimesfftPaddedE += p2l->paddedE;
 }
 
 void fpmIntHexCMCForPupToLyot::draw(const char *title) {

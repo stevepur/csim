@@ -25,12 +25,15 @@ public:
     fpmForPupilToLyot() {}
     fpmForPupilToLyot(fpmPupToLyot *p2l, initCommandSet*& cmdBlock) {}
     
+    bool doBabinet = false;
+    
     virtual void set_geometry(fpmPupToLyot *prop, efield* E, double *lambda, double *lambdaFocalLength) {}
     virtual void set_fpmMatAmp(fpmPupToLyot *p2l, double lambda, int sl) {}
     virtual void apply_babinet(fpmPupToLyot *p2l) {}
     virtual void draw(const char *title = ""){}
     virtual void get_optimization_data(const char *dataName, void *data) {}
     virtual void set_optimization_data(const char *dataName, void *data) {}
+    void set_babinet(bool onOff) { doBabinet = onOff; }
     
 };
 
@@ -141,6 +144,7 @@ public:
     
     void get_optimization_data(const char *dataName, void *data);
     void set_optimization_data(const char *dataName, void *data);
+    void set_babinet(bool onOff);
 
     void draw(const char *title = "");
 };

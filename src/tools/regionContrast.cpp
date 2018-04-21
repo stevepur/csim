@@ -80,6 +80,7 @@ void regionContrast::set(std::string fieldName, const char *arg) {
 
 void regionContrast::get_region_pixels(efield *E, arma::uvec& pixelIndex) {
     
+    std::cout << "get_region_pixels: loD=" << loD << " radius1=" << radius1 << " radius2=" << radius2 << " angle1=" << angle1 << " angle2=" << angle2 << std::endl;
     arma::umat inSample = (E->arrayGeometry.pixelRR/loD > radius1)
     % (E->arrayGeometry.pixelRR/loD < radius2)
     % (E->arrayGeometry.pixelTT > angle1*M_PI/180)
@@ -127,16 +128,19 @@ void regionContrast::compute_contrast(void) {
     globalCoronagraph->execute(fullEfield, 0);
     std::cout << "contrast curve csim execution time: " << timer.toc() << " seconds" << std::endl;
     
+    print("contrast region:");
     arma::uvec pixelIndex;
     arma::vec pixelX;
     arma::vec pixelY;
     get_region_pixels(fullEfield, pixelIndex, pixelX, pixelY);
+//    std::cout << "there are " << pixelIndex.n_elem << " pixels: " << std::endl;
+//    std::cout << pixelIndex << std::endl;
     
-    arma::cx_mat emat = *(fullEfield->E[0][0]);
-    arma::vec evecRe = real(emat(pixelIndex));
-    arma::vec evecIm = imag(emat(pixelIndex));
-    save_vec("trueEVecRe.fits", evecRe);
-    save_vec("trueEVecIm.fits", evecIm);
+//    arma::cx_mat emat = *(fullEfield->E[0][0]);
+//    arma::vec evecRe = real(emat(pixelIndex));
+//    arma::vec evecIm = imag(emat(pixelIndex));
+//    save_vec("trueEVecRe.fits", evecRe);
+//    save_vec("trueEVecIm.fits", evecIm);
 
     arma::cube calibIntensity;
     calibIntensity.zeros(size(*(calibEfield->E[0][0])));
@@ -170,7 +174,7 @@ void regionContrast::compute_contrast(void) {
         int minCol = min(matIndex(1,arma::span::all));
         int maxCol = max(matIndex(1,arma::span::all));
         
-        std::cout << "bounding indices: " << minRow << ", " << maxRow << ", " << minCol << ", " << maxCol << std::endl;
+//        std::cout << "bounding indices: " << minRow << ", " << maxRow << ", " << minCol << ", " << maxCol << std::endl;
         
         arma::mat drawContrastMat = zeros(arma::size(fullIntensitySum));
         for (int i=0; i<pixelIndex.n_elem; i++)

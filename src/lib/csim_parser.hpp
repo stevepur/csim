@@ -9,8 +9,6 @@
 #ifndef csim_parser_hpp
 #define csim_parser_hpp
 
-#define nCommandsDefault 20
-
 #include <vector>
 
 class initCommand {

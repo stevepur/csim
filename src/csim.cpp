@@ -21,6 +21,7 @@
 #include "contrastCurve.hpp"
 #include "regionContrast.hpp"
 #include "makeHexCFpmResponse.hpp"
+#include "differentialEvolutionOptimizer.hpp"
 
 int main(int argn, char **argv) {
     arma::wall_clock timer;
@@ -45,9 +46,11 @@ int main(int argn, char **argv) {
     
     init_fft_lib(computeFftWisdon); // initialize the FFTW library
     initCommandSet initCommands(argv[optind]); // parse the input script into command block sets
-    
+
     std::vector<initCommandSet*> cmdBlocks = initCommands.find_command_blocks(); // extract the top level of command blocks
+//    std::cout << "found " << cmdBlocks.size() << " command blocks" << std::endl;
     for (int i=0; i<cmdBlocks.size(); i++) { // for each command block, respond to the first command
+//        cmdBlocks[i]->print();
         if (!strcmp(cmdBlocks[i]->commandList[0]->getCmdStr(), "telescope")) {
             // create the global telescope
             globalTelescope = new telescope(cmdBlocks[i]);
@@ -75,6 +78,11 @@ int main(int argn, char **argv) {
             // create and execute the contrast curve tool
             makeHexCFpmResponse *myMakeHexCFpmResponse = new makeHexCFpmResponse(cmdBlocks[i]);
             myMakeHexCFpmResponse->compute_response();
+        }
+        if (!strcmp(cmdBlocks[i]->commandList[0]->getCmdStr(), "differentialEvolutionOptimizer")) {
+            // create and execute the contrast curve tool
+            differentialEvolutionOptimizer *deOptimizer = new differentialEvolutionOptimizer(cmdBlocks[i]);
+            deOptimizer->optimize();
         }
         if (!strcmp(cmdBlocks[i]->commandList[0]->getCmdStr(), "execute")) {
             // do a single execution of the global coronagraph

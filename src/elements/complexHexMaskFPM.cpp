@@ -59,18 +59,26 @@ arma::cx_mat complexHexMaskFPM::make_complex_intpolated_mask(double lambda, doub
                     if (useOnlyThisHex > -1) {
                         if ((int)interpHexNum(r,c,s) == useOnlyThisHex)
                             interpNSubPixToUse(r,c,s) = interpNSubPix(r,c,s);
-                        else if ((int)interpHexNum(r,c,s) > -1)
+                        else if (useOnlyThisHex == fpmSags.n_elem & (int)interpHexNum(r,c,s) == -1)
+//                            interpNSubPixToUse(r,c,s) = 0.0;
+                            interpNSubPixToUse(r,c,s) = interpNSubPix(r,c,s);
+                        else
                             interpNSubPixToUse(r,c,s) = 0;
+//                        else if ((int)interpHexNum(r,c,s) > -1)
+//                            interpNSubPixToUse(r,c,s) = 0;
                     }
                 }
     }
     
     // make the interpolated complex mask
     arma::cx_mat complexIntMask = sum(interpNSubPixToUse % exp(-2*M_PI*i1*2.0*interpSagVals/lambda), 2)/(nSubPix*nSubPix);
+    arma::mat maskSags = sum(interpNSubPixToUse % interpSagVals, 2)/(nSubPix*nSubPix);
+//    save_mat("complexIntMaskSags.fits", maskSags);
 //    draw_mat(arma::abs(complexIntMask), "mask");
-    char mName[200];
-    sprintf(mName, "useOnlyThisHexMask_%d.fits", useOnlyThisHex);
-    save_mat(mName, complexIntMask, "amPh");
+//    char mName[200];
+//    sprintf(mName, "useOnlyThisHexMask_%d.fits", useOnlyThisHex);
+//    const char *mName = "complexIntMask.fits";
+//    save_mat(mName, complexIntMask, "amPh");
 //    save_mat(mName, complexIntMask, "reIm");
     
     return complexIntMask;

@@ -224,6 +224,7 @@ xc1 = 0.5/fpmRad*FPMSCALEFACTOR;
 testSagArray = zeros(fpmSize);
 nSubPix = zeros(fpmSize, fpmSize, 3);
 sagVals = zeros(fpmSize, fpmSize, 3);
+subHexNum = zeros(fpmSize, fpmSize, 3);
 for i=1:size(testSagArray, 1)
     disp(['i = ' num2str(i)]);
     iii = fix(NBsubPix/2);
@@ -255,21 +256,22 @@ for i=1:size(testSagArray, 1)
                     continue;
                 end
 
-                inHexIdx = fpmDesignArray(ii1, jj1) + 1;
-                if inHexIdx < 1
+                inHexIdx = fpmDesignArray(ii1, jj1) + 1; % hex number + 1, indexes into sag array
+                if inHexIdx < 1 % if this is not on a hex
                     nSubPix(i, j, 1) = nSubPix(i, j, 1) + 1;
                     continue;
                 end
                 if ~ismember(inHexIdx, hexList)
-                    hexList = [hexList, inHexIdx];
+                    hexList = [hexList, inHexIdx]; % add this hex index to the list of the three
                     if length(hexList) > 3
                         error('too many hexes');
                     end
                 end
-                hexListIdx = find(hexList == inHexIdx);
+                hexListIdx = find(hexList == inHexIdx); % find which of the three is this hex index
                 if ~isempty(hexListIdx)
-                    nSubPix(i, j, hexListIdx) = nSubPix(i, j, hexListIdx) + 1;
-                    sagVals(i, j, hexListIdx) = fpmSags(inHexIdx);
+                    nSubPix(i, j, hexListIdx) = nSubPix(i, j, hexListIdx) + 1; % add to the subPixel count
+                    sagVals(i, j, hexListIdx) = fpmSags(inHexIdx); % record the sag for this value
+                    subHexNum(i, j, hexListIdx) = inHexIdx - 1; % record the hex number
                 end
             end
         end
@@ -284,7 +286,7 @@ imagesc(testSagArray);
 axis equal
 axis xy
 
-save hexdata_olivier_1.mat nSubPix sagVals testSagArray fpscale lambda NBsubPix hexXFpmIndexCoords hexYFpmIndexCoords fpmDesignArray fpmDesignSags
+save hexdata_olivier_1.mat nSubPix sagVals subHexNum testSagArray fpscale lambda NBsubPix hexXFpmIndexCoords hexYFpmIndexCoords fpmDesignArray fpmDesignSags
 
 %% intpolate amplitude and phase
 lambda = 5.50875e-07;

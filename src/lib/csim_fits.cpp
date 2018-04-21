@@ -186,6 +186,12 @@ void load_vec(const char *filename, arma::vec& fillVec, int verbose) {
     free(data);
 }
 
+void load_vec(const char *filename, arma::rowvec& fillVec, int verbose) {
+    arma::vec tv;
+    load_vec(filename, tv, verbose);
+    fillVec = tv.t();
+}
+
 void load_mat(const char *filename, arma::mat& fillMat, int verbose) {
     void *data = NULL;
     int nDims = 0;
@@ -381,10 +387,14 @@ int load_cube(const char *filename, arma::cx_cube& fillCube, int verbose) {
     
     strcpy(loadName, nameRoot);
     strcat(loadName, "_re.fits");
-    load_cube(filename, reCube, verbose);
+    if (verbose)
+        std::cout << "loading cube: " << loadName << std::endl;
+    load_cube(loadName, reCube, verbose);
     strcpy(loadName, nameRoot);
     strcat(loadName, "_im.fits");
-    load_cube(filename, imCube, verbose);
+    if (verbose)
+        std::cout << "loading cube: " << loadName << std::endl;
+    load_cube(loadName, imCube, verbose);
     
     fillCube.set_size(reCube.n_rows, reCube.n_cols, reCube.n_slices);
     fillCube.set_real(reCube);
@@ -533,7 +543,11 @@ void save_vec(const char *filename, arma::vec& saveVec, int verbose) {
     write_fits_array(filename, data, nDims, dims, dataType, verbose);
 }
 
+void save_vec(const char *filename, arma::rowvec& saveVec, int verbose) {
+    arma::vec tv = saveVec.t();
+    save_vec(filename, tv, verbose);
+}
 
-    
+
     
     
