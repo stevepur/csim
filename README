@@ -22,7 +22,7 @@ I got the following libraries directly from their websites and built them in a l
 If you have a gpu you need the NVidia CUDA library, version >= 8.0
 
 ===================================================
-==== building csim:
+==== building csim
 
 0) be in the top csim directory, which contains directories like src etc.
 
@@ -64,19 +64,28 @@ with LD_LIBRARY_PATH pointing at your CUDA library, and NVBLAS_CONFIG_FILE proba
 
 
 ===================================================
-==== running csim:
+==== running csim
 
 csim runs a coronagraph completely specified by an input script.  This input script specifies each coronagraph component.
 To run without the gpu:
-csim <input script>
+src/csim <input script>
 
 To run with the gpu, if you used Makefile_gpu.am in step 2:
-csim_gpu <input script>
+src/csim_gpu <input script>
 
 
 The first time you run csim with a new input script, you should run it as
-csim -w <input script>
+src/csim -w <input script>
 which will generate the FFT wisdom needed to do fast FFTs for the array sizes in this input script, which is saved in the file "fft_wisdom.dat".  This will be very slow the first time, but will be fast with every later run (without the -w flag) of the same input script.  When you run a new input script, use the -w flag again.  The FFT wisdom is cumulative, adding to fft_wisdom.dat every time it encounters a new array size.
+
+===================================================
+==== csim examples
+
+the csim repository on github includes two working examples: WFIRST SPC and a donut idealized PIAA CMC design.  To run these examples, try
+
+src/csim spc_input.txt
+
+src/csim donutPiaaHexFPMExample.txt
 
 
 

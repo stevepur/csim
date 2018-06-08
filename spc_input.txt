@@ -68,7 +68,7 @@ start
 #		draw:postExecute
 #		save:postExecute
 	end
-	start 
+	start
 		fraunhoferFocal
 		position:0
 		name:science CCD

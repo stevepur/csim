@@ -5,7 +5,7 @@ start
 	differentialEvolutionOptimizer
 	start
 		optHexRespObjective
-		responseDirectory:donutPiaaFullCircle/3source_2_6/responseData
+		responseDirectory:donutPiaaFullCircleExample/3source_2_6/responseData
 		objectiveType:mean
 	end
 	# deRand1 or deLocalToBest1 or eitherOr
@@ -33,6 +33,6 @@ start
 	baseStrategySpreadSwitch:1e-7
 	endStrategySpreadSwitch:0
 	outputInterval:100
-	outputDirectory:donutPiaaFullCircle/3source_2_6/optTest
+	outputDirectory:donutPiaaFullCircleExample/3source_2_6/optTest
 	saveState:0
 end

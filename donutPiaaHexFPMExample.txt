@@ -30,13 +30,13 @@ start
 	coronagraph
 	start
 		mask
-		filename:donutPiaa/Apodization2D_piaa1p4_l_D1024.fits
+		filename:donutPiaaFullCircleExample/Apodization2D_piaa1p4_l_D1024.fits
 		position:0
 		name:donut apodization
 	end
 	start
 		mirror
-		filename:donutPiaa/DM1.fits
+		filename:donutPiaaFullCircleExample/DM1.fits
 		position:0
 		name:dm1
 	end
@@ -63,14 +63,14 @@ start
 				fpmFRatio: 85.9
 				nSubPix: 64
 				fpmRadius: 1.85e-04
-				maskFilenameRoot:donutPiaa/mask_data
+				maskFilenameRoot:donutPiaaFullCircleExample/mask_data
 				sagFilename:donutPiaaFullCircleExample/mono_2_6/optTest1/bestOptVector.fits
 			end
 		end
 	end
 	start
 		mask
-		filename:donutPiaa/lyotStopOpen.fits
+		filename:donutPiaaFullCircleExample/lyotStopOpen.fits
 		position:0
 		name:Lyot stop
 	end
@@ -86,7 +86,7 @@ start
 end
 start
 	makeContrastCurve
-	filename:donutPiaa/contrastCurve.txt
+	filename:donutPiaaFullCircleExample/contrastCurve.txt
 	draw:on
 	drawTo:12.0
 end
@@ -101,7 +101,7 @@ end
 #start
 #	makeHexCFpmResponse
 #	DataToOptimize:FPM,sags
-#	outputDirectory:donutPiaaFullCircle/mono_1p8_5/responseData
+#	outputDirectory:donutPiaaFullCircleExample/mono_1p8_5/responseData
 #	start
 #		regionContrast
 #		referenceLambda:650e-9
