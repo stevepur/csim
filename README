@@ -2,7 +2,7 @@ csim (ALWAYS LOWER CASE) is a coronagraph design system designed for easy extens
 
 ==== csim requires the following libraries:
 
-Generally speaking, later librarie versions than listed below should be OK, but sometimes the APIs change.  So beware.
+Generally speaking, later library versions than listed below should be OK, but sometimes the APIs change.  So beware.
 
 The followng should be obtained via your favorite package manager:
 libtool
@@ -39,7 +39,7 @@ elements/Makefile.am
 lib/Makefile.am
 optimization/Makefile.am
 telescope/Makefile.am (actually currently no changes are needed here)
-tools/Makefile.am (actually currently no changes are needed here)
+tools/Makefile.am
 
 (someday I'll figure out how to make it so you only have to change a single file that sets these paths)
 
