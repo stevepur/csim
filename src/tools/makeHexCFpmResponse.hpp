@@ -19,6 +19,7 @@ class makeHexCFpmResponse {
     char *filename = NULL;
     bool draw = false;
     regionContrast *region = NULL;
+    char *outputDirectory = NULL;
     
 public:
 

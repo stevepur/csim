@@ -81,8 +81,8 @@ void regionContrast::set(std::string fieldName, const char *arg) {
 void regionContrast::get_region_pixels(efield *E, arma::uvec& pixelIndex) {
     
     std::cout << "get_region_pixels: loD=" << loD << " radius1=" << radius1 << " radius2=" << radius2 << " angle1=" << angle1 << " angle2=" << angle2 << std::endl;
-    arma::umat inSample = (E->arrayGeometry.pixelRR/loD > radius1)
-    % (E->arrayGeometry.pixelRR/loD < radius2)
+    arma::umat inSample = (E->arrayGeometry.pixelRR/loD >= radius1)
+    % (E->arrayGeometry.pixelRR/loD <= radius2)
     % (E->arrayGeometry.pixelTT > angle1*M_PI/180)
     % (E->arrayGeometry.pixelTT < angle2*M_PI/180);
     
@@ -106,7 +106,7 @@ void regionContrast::set_loD(void) {
             lambdaSum += initialEfield->lambdaData[i].get_wavelength();
         referenceLambda = lambdaSum/nLambdas;
     }
-    loD = globalTelescope->get("primaryfLength")*referenceLambda/globalTelescope->get("primaryDiameter");
+    loD = globalTelescope->compute_loD(referenceLambda);
     std::cout << "referenceLambda = " << referenceLambda << ", loD = " << loD << std::endl;
 }
 
@@ -121,12 +121,12 @@ void regionContrast::compute_contrast(void) {
     globalCoronagraph->set_calibration_state(true);
     timer.tic();
     globalCoronagraph->execute(calibEfield, 0);
-    std::cout << "contrast curve calibration csim execution time: " << timer.toc() << " seconds" << std::endl;
+    std::cout << "region contrast calibration csim execution time: " << timer.toc() << " seconds" << std::endl;
     
     globalCoronagraph->set_calibration_state(false);
     timer.tic();
     globalCoronagraph->execute(fullEfield, 0);
-    std::cout << "contrast curve csim execution time: " << timer.toc() << " seconds" << std::endl;
+    std::cout << "region contrast csim execution time: " << timer.toc() << " seconds" << std::endl;
     
     print("contrast region:");
     arma::uvec pixelIndex;

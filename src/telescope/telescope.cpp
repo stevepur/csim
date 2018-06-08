@@ -32,6 +32,8 @@ void telescope::init(initCommandSet*& cmdBlocks) {
 void telescope::set(std::string fieldName, const char *value) {
     if (fieldName == "telescope")
         ;
+    else if (fieldName == "magnification")
+        magnification = atof(value);
     else if (fieldName == "primaryDiameter")
         primaryDiameter = atof(value);
     else if (fieldName == "primaryFRatio" || fieldName == "primaryfRatio")
@@ -43,12 +45,18 @@ void telescope::set(std::string fieldName, const char *value) {
 double telescope::get(std::string fieldName) {
     if (fieldName == "primaryDiameter")
         return primaryDiameter;
+    else if (fieldName == "magnification")
+        return magnification;
     else if (fieldName == "primaryFRatio" || fieldName == "primaryfRatio")
-    return primaryfRatio;
+        return primaryfRatio;
     else if (fieldName == "primaryFLength" || fieldName == "primaryfLength")
-    return primaryfLength;
+        return primaryfLength;
     else
         std::cout << "!!!!! telescope get: unknown fieldName: " << fieldName << std::endl;
+}
+
+double telescope::compute_loD(double lambda) {
+    return magnification*primaryfLength*lambda/primaryDiameter;
 }
 
 void telescope::print(const char *header) {

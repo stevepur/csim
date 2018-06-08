@@ -11,6 +11,7 @@
 
 #include "armadillo"
 #include "../lib/csim_parser.hpp"
+#include "efield.hpp"
 #undef ARMA_BLAS_UNDERSCORE
 
 
@@ -38,9 +39,12 @@ public:
     void init(initCommandSet*& cmdBlock);
     
     void set(std::string fieldName, const char *arg);
+    void set(std::string fieldName, double arg);
     void set_size(int nRows, int nColumns, int nSlices);
+    void set_wavelengths(lambdaDataClass *lambdaData);
     void save(void);
     void load(void);
+    void save_problem_params(void);
     void read_problem_params(void);
     void print(const char *header = NULL);
 };

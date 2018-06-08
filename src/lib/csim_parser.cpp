@@ -140,6 +140,7 @@ std::vector<initCommandSet*> initCommandSet::find_command_blocks(void) {
     for (unsigned int i=0; i<commandList.size(); i++) {
         bool madeBlock = false;
         
+//        std::cout << "getCmdStr = " << commandList[i]->getCmdStr() << std::endl;
         if (!strcmp(commandList[i]->getCmdStr(), "start")) {
 
             if (!startCount) {
@@ -156,11 +157,14 @@ std::vector<initCommandSet*> initCommandSet::find_command_blocks(void) {
 //            std::cout << "startCount = " << startCount << std::endl;
             if (startCount)
                 newBlock->add_command(commandList[i]);
-//            else
+            else {
 //                std::cout << "======= ended a subblock" << std::endl;
+                madeBlock = false;
+            }
         } else if (!startCount & !madeBlock) { // we've found a command not between a start and end
             if (cmdBlock == NULL) // init the cmdBlock if it's not already inited
                 cmdBlock = new initCommandSet;
+//            std::cout << "!!!!!!! adding a command to cmdBlock: " << commandList[i]->getCmdStr() << std::endl;
             cmdBlock->add_command(commandList[i]); // add this command to the non-block commands
         } else if (newBlock != NULL) {
             newBlock->add_command(commandList[i]);
@@ -169,7 +173,9 @@ std::vector<initCommandSet*> initCommandSet::find_command_blocks(void) {
     }
     if (cmdBlock != NULL) { // if there are commands not between start and stop
         commandBlockList.insert(commandBlockList.begin(), cmdBlock);
-        std::cout << "inserted a non-delimited command block at the beginning" << std::endl;
+//        commandBlockList.push_back(cmdBlock);
+//        std::cout << "inserted a non-delimited command block at the beginning" << std::endl;
+//        cmdBlock->print("non-delimited block:");
     }
     return commandBlockList;
 }

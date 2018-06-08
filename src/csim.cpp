@@ -46,7 +46,7 @@ int main(int argn, char **argv) {
     
     init_fft_lib(computeFftWisdon); // initialize the FFTW library
     initCommandSet initCommands(argv[optind]); // parse the input script into command block sets
-
+    
     std::vector<initCommandSet*> cmdBlocks = initCommands.find_command_blocks(); // extract the top level of command blocks
 //    std::cout << "found " << cmdBlocks.size() << " command blocks" << std::endl;
     for (int i=0; i<cmdBlocks.size(); i++) { // for each command block, respond to the first command
@@ -90,6 +90,7 @@ int main(int argn, char **argv) {
             globalCoronagraph->execute(initialEfield, 0, showTimes);
             std::cout << "csim execution time: " << timer.toc() << " seconds" << std::endl;
         }
+        std::cout << "finished this block" << std::endl;
     }
     if (computeFftWisdon)
         save_fft_wisdom();

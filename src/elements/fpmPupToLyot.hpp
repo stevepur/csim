@@ -42,6 +42,8 @@ public:
 class fpmCMCForPupToLyot : public fpmForPupilToLyot {
     arma::cube complexMaskMatAmp;
     arma::cube complexMaskMatPh;
+    arma::cube complexMaskMatIm;
+    arma::cube complexMaskMatRe;
     arma::cx_cube complexMaskCube;
     int maskIndex = -1;
     double fpmMatScale = 0;
@@ -51,6 +53,7 @@ public:
     
     void set(fpmPupToLyot *p2l, std::string fieldName, const char *arg);
     void initMask(const char *filenameAmp, const char *filenamePh);
+    void initMaskReIm(const char *filenameRe, const char *filenameIm);
     void set_geometry(fpmPupToLyot *prop, efield* E, double *lambda, double *lambdaFocalLength);
     void set_fpmMatAmp(fpmPupToLyot *p2l, double lambda, int sl);
     void apply_babinet(fpmPupToLyot *p2l);

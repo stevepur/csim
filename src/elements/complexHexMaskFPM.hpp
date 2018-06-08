@@ -27,6 +27,7 @@ class complexHexMaskFPM : public celem {
     
     double fpmScale = -1;
     double zoomFactor = 1.0;
+    double phaseSign = 1.0;
     
     std::string maskFilenameRoot;
     

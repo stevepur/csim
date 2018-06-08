@@ -133,11 +133,24 @@ void responseData::set(std::string fieldName, const char *arg) {
         // arg is a string
         outputDirectory = new char[strlen(arg)+1];
         strcpy(outputDirectory, arg);
+        if (access(outputDirectory, 0) == -1) {
+            std::cout << "making " << outputDirectory << std::endl;
+            mkdir(outputDirectory, S_IRWXU|S_IRWXG|S_IROTH|S_IXOTH);
+        }
     }
     else if (fieldName == "name") {
         // arg is a string
         name = new char[strlen(arg)+1];
         strcpy(name, arg);
+    }
+    else
+        std::cout << "!!!!! responseData set: unknown fieldName: " << fieldName << std::endl;
+}
+
+void responseData::set(std::string fieldName, double arg) {
+    if (fieldName == "calibIntensity") {
+        // arg is a float
+        calibIntensity = arg;
     }
     else
         std::cout << "!!!!! responseData set: unknown fieldName: " << fieldName << std::endl;
@@ -151,9 +164,15 @@ void responseData::set_size(int nRows, int nColumns, int nSlices) {
     }
 }
 
+void responseData::set_wavelengths(lambdaDataClass *lambdaData) {
+    assert(M[0][0]->n_slices > 0);
+    
+    wavelengths.set_size(M[0][0]->n_slices);
+    for (int i=0; i<M[0][0]->n_slices; i++)
+        wavelengths[i] = lambdaData[i].get_wavelength();
+}
+
 void responseData::save(void) {
-    if (access(outputDirectory, 0) == -1)
-        mkdir(outputDirectory, S_IRWXU|S_IRWXG|S_IROTH|S_IXOTH);
     
     std::string fname = (std::string)outputDirectory + "/responseParams.txt";
     FILE *fid = fopen(fname.c_str(), "w");
@@ -163,9 +182,10 @@ void responseData::save(void) {
     for (int s=0; s<M.size(); s++) {
         for (int p=0; p<M[s].size(); p++) {
             fname = (std::string)outputDirectory + "/responseData_s" + std::to_string(s) + "_p" + std::to_string(p);
-            save_cube(fname.c_str(), *(M[s][p]), true);
+            save_cube(fname.c_str(), *(M[s][p]), false);
         }
     }
+    save_problem_params();
 }
 
 void responseData::load(void) {
@@ -193,6 +213,19 @@ void responseData::load(void) {
     }
     
     read_problem_params();
+}
+
+void responseData::save_problem_params(void) {
+    std::string fname = (std::string)outputDirectory + "/problemParams.txt";
+    FILE *fid = fopen(fname.c_str(), "w");
+    
+    fprintf(fid, "calibMaxIntensity: %lf\n", calibIntensity);
+    fprintf(fid, "wavelengths: ");
+    for (int i=0; i<wavelengths.n_elem; i++)
+        fprintf(fid, "%g ", wavelengths[i]);
+    fprintf(fid, "\n");
+    
+    fclose(fid);
 }
 
 void responseData::read_problem_params(void) {

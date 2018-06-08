@@ -33,7 +33,8 @@ void lambdaDataClass::set_wavelength(double wavelength) {
     assert(globalTelescope->get("primaryfLength") != 0 & globalTelescope->get("primaryDiameter") != 0);
     
     lambda = wavelength;
-    focalLengthLambdaOverD = globalTelescope->get("primaryfLength") * lambda / globalTelescope->get("primaryDiameter");
+//    focalLengthLambdaOverD = globalTelescope->get("primaryfLength") * lambda / globalTelescope->get("primaryDiameter");
+    focalLengthLambdaOverD = globalTelescope->compute_loD(lambda);
 }
 
 double lambdaDataClass::get_wavelength(void) {
@@ -259,6 +260,8 @@ void efield::set(std::string fieldName, const char *arg) {
         double tipX;
         double tiltY;
         sscanf(arg, "%lf, %lf, %lf", &flux, &tipX, &tiltY);
+        tipX = tipX*globalTelescope->get("magnification");
+        tiltY = tiltY*globalTelescope->get("magnification");
         add_point_source(sqrt(flux), tipX, tiltY);
     }
     else if (fieldName == "referenceWavelength") {

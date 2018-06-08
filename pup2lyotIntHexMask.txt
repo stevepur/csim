@@ -20,8 +20,8 @@ start
 #	pointSource:0.33333333333, -0.004, 0.006928203230276
 #	pointSource:0.33333333333, -0.004, -0.006928203230276
 #	pointSource:1e-7, 3.0, 1.0
-#	wavelength:5.565e-07
-	wavelength:5.62175e-07
+	wavelength:5.565e-07
+#	wavelength:5.62175e-07
 #	wavelengthBandwidth: 5.565e-07, 0.1, 5
 #	wavelengthBandwidth: 5.62175e-07, 0.1, 5
 #	wavelengthBandwidth: 5.62175e-07, 0.1, 20
@@ -117,10 +117,10 @@ start
 				fpmFRatio: 80
 				nSubPix: 64
 				fpmRadius: 0.0001356
-				sagFilename:wfirst_sags.fits
+#				sagFilename:wfirst_sags.fits
 #				sagFilename:optTestcopy/bestOptVector.fits
 #				sagFilename:polyResp_m90_90_2_8/bestOptVector_2.96217e-08.fits
-#				sagFilename:resp_m90_90_2_8/bestOptVector8.61172e-09.fits
+				sagFilename:resp_m90_90_2_8/bestOptVector8.61172e-09.fits
 #				sagFilename:sag_m180_180_1p5_8_poly.fits
 #				sagFilename:sag_m180_180_1_3_poly_1.89em9.fits
 #				sagFilename:sag_m20_20_1_3_poly.fits
@@ -204,20 +204,20 @@ start
 	draw:on
 	drawTo:12.0
 end
-#start
-#	regionContrast
-#	referenceLambda:5.65e-7
+start
+	regionContrast
+	referenceLambda:5.65e-7
 #	radii:1.5,8
-#	radii:2,8
+	radii:2,8
 #	radii:1,3
 #	radii:2,6
 #	radii:2,10
 #	anglesInDegrees:-20,20
-#	anglesInDegrees:-90,90
+	anglesInDegrees:-90,90
 #	anglesInDegrees:-180,180
 #	anglesInDegrees:-30,30
-#	filename:regionContrast.txt
-#	draw:on
+	filename:regionContrast.txt
+	draw:on
 #end
 #start
 #	makeHexCFpmResponse

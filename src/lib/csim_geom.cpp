@@ -15,7 +15,7 @@
 // set up array geometry including pixel radius and angle
 void arrayGeom::set_geometry(int nRows, int nCols, double physicalRadius, bool display) {
     
-    set_xy(nRows, nCols, physicalRadius, display);
+    set_xy_m1(nRows, nCols, physicalRadius, display);
     
     set_mesh();
     

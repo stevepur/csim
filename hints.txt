@@ -45,7 +45,7 @@ autoreconf --install
 make
 
 
-c_count csim.[ch]pp coronagraph/*.[ch]pp efield/*.[ch]pp elements/*.[ch]pp lib/*.[ch]pp telescope/*.[ch]pp test.[ch]pp tools/*.[ch]pp
+c_count csim.[ch]pp coronagraph/*.[ch]pp data/*.[ch]pp elements/*.[ch]pp lib/*.[ch]pp telescope/*.[ch]pp test.[ch]pp tools/*.[ch]pp
 
 =====================================
 openmp test compile line

@@ -22,7 +22,7 @@ fpmPupToLyot::fpmPupToLyot(initCommandSet*& cmdBlock) {
 }
 
 efield* fpmPupToLyot::execute(efield* E, celem* prev, celem* next, double time) {
-//    std::cout << "executed a fpmPupToLyot " << name << std::endl;
+//    std::cout << "executing a fpmPupToLyot " << name << std::endl;
     std::complex<double> i1(0, 1);
     std::complex<double> r1(1, 0);
     int nRowsE = E->E[0][0]->n_rows;
@@ -40,7 +40,6 @@ efield* fpmPupToLyot::execute(efield* E, celem* prev, celem* next, double time) 
     double *lambdaFocalLength = new double[E->E[0][0]->n_slices];
     mask->set_geometry(this, E, lambda, lambdaFocalLength);
     propZoomFft.init(maskGeom, paddedGeom, lambdaFocalLength, E->E[0][0]->n_slices);
-//    std::cout << "lambda = " << lambda[0] << ", lambdaFocalLength = " << lambdaFocalLength[0] << std::endl;
 //    maskGeom.print("maskGeom");
     for (int sl=0; sl<E->E[0][0]->n_slices; sl++) {
 //        std::cout << "fpmPupToLyot::execute slice " << sl << ", lambda = " << lambda[sl] << std::endl;
@@ -48,6 +47,7 @@ efield* fpmPupToLyot::execute(efield* E, celem* prev, celem* next, double time) 
 //        std::cout << "lambda = " << lambda[sl] << ", lambdaFocalLength = " << lambdaFocalLength[sl] << std::endl;
 //        std::cout << "calibrating: " << globalCoronagraph->get_calibration_state() << ", disableForCalibration: " << disableForCalibration << std::endl;
         mask->set_fpmMatAmp(this, lambda[sl], sl);
+//        std::cout << "finished set_fpmMatAmp" << std::endl;
         // matlab: mask.M_hat = zoomFFT_realunits(mask.x, mask.y, mask.M - 1, pupil_ext.x, pupil_ext.y, pupil.f, lambda);
 //        if (sl == E->E[0][0]->n_slices-1)
 //            save_mat("fpmMatAmp.fits", fpmMatAmp, "reIm");
@@ -198,7 +198,23 @@ void fpmCMCForPupToLyot::set(fpmPupToLyot *p2l, std::string fieldName, const cha
         std::cout << "loading " << strAmp << " and " << strPh << std::endl;
         initMask(strAmp, strPh);
         //        draw("initial FPM");
-    } else if (fieldName == "fpmMatScale") {
+    } else if (fieldName == "maskFilenameReIm") {
+        // arg is two filenames separated by a comma, each giving
+        // the .fits amplitude and phase filename that contains the complexMask definition
+        char *cPtr = strchr(arg, ',');
+        int strReLen = cPtr - arg;
+        int strImLen = strlen(arg) - strReLen + 1;
+        std::cout << "strReLen " << strReLen << ", strImLen " << strImLen << std::endl;
+        char *strRe = new char[strReLen + 1];
+        char *strIm = new char[strImLen + 1];
+        strncpy(strRe, arg, strReLen);
+        strRe[strReLen] = '\0';
+        strncpy(strIm, cPtr + 1, strImLen);
+        strIm[strImLen] = '\0';
+        std::cout << "loading " << strRe << " and " << strIm << std::endl;
+        initMaskReIm(strRe, strIm);
+                draw("initial FPM");
+        } else if (fieldName == "fpmMatScale") {
         // arg is a single double
         fpmMatScale = atof(arg);
         std::cout << "fpmMatScale = " << fpmMatScale << std::endl;
@@ -218,13 +234,29 @@ void fpmCMCForPupToLyot::initMask(const char *filenameAmp, const char *filenameP
     }
 }
 
+void fpmCMCForPupToLyot::initMaskReIm(const char *filenameRe, const char *filenameIm) {
+    
+    load_cube(filenameRe, complexMaskMatRe);
+    load_cube(filenameIm, complexMaskMatIm);
+    complexMaskCube.set_size(size(complexMaskMatRe));
+    complexMaskMatAmp.set_size(size(complexMaskMatRe));
+    complexMaskMatPh.set_size(size(complexMaskMatRe));
+    for (int sl=0; sl<complexMaskMatRe.n_slices; ++sl) {
+        complexMaskCube.slice(sl).set_real(complexMaskMatRe.slice(sl));
+        complexMaskCube.slice(sl).set_imag(complexMaskMatIm.slice(sl));
+        complexMaskMatAmp.slice(sl) = abs(complexMaskCube.slice(sl));
+        complexMaskMatPh.slice(sl) = arg(complexMaskCube.slice(sl));
+    }
+//    save_mat("donutfpm.fits", complexMaskCube.slice(0));
+}
+
 void fpmCMCForPupToLyot::set_geometry(fpmPupToLyot *p2l, efield* E, double *lambda, double *lambdaFocalLength) {
     // matlab:
     // mask.dx = mask.x(2) - mask.x(1);
     // mask.dxprime = 1.098e-06; (fpmMatScale)
     // mask.resample = mask.dx / mask.dxprime;
     // mask.x = mask.x / mask.resample;
-    p2l->maskGeom.set_xy(complexMaskCube.n_rows, complexMaskCube.n_cols, (E->arrayGeometry.physicalSize/2.)/(E->arrayGeometry.pixelSizeX/fpmMatScale));
+    p2l->maskGeom.set_xy_m1(complexMaskCube.n_rows, complexMaskCube.n_cols, (E->arrayGeometry.physicalSize/2.)/(E->arrayGeometry.pixelSizeX/fpmMatScale));
     
     //    E->print("in set_geometry");
     double cFRatio = p2l->focalRatio*2*E->beamRadiusPhysical;
@@ -276,6 +308,7 @@ fpmIntHexCMCForPupToLyot::fpmIntHexCMCForPupToLyot(fpmPupToLyot *p2l, initComman
         std::cout << "processing " << subBlocks[i]->commandList[0]->getCmdStr() << std::endl;
         // define the FPM
         if (!strcmp(subBlocks[i]->commandList[0]->getCmdStr(), "complexHexMaskFPM")) {
+            std::cout << "zoomFactor = " << zoomFactor << std::endl;
             assert(zoomFactor > 0.0);
             hexFPM = new complexHexMaskFPM(subBlocks[i], zoomFactor);
         }
@@ -285,6 +318,7 @@ fpmIntHexCMCForPupToLyot::fpmIntHexCMCForPupToLyot(fpmPupToLyot *p2l, initComman
                     subBlocks[i]->commandList[c]->getArgStr());
             }
         }
+        std::cout << "zoomFactor = " << zoomFactor << std::endl;
     }
     set_babinet(true); // turn on babinet for this mask
 }
@@ -307,10 +341,10 @@ void fpmIntHexCMCForPupToLyot::set_geometry(fpmPupToLyot *p2l, efield* E, double
     // mask.dxprime = 1.098e-06; (fpmMatScale)
     // mask.resample = mask.dx / mask.dxprime;
     // mask.x = mask.x / mask.resample;
-    p2l->maskGeom.set_xy(hexFPM->interpNSubPix.n_rows, hexFPM->interpNSubPix.n_cols, (E->arrayGeometry.physicalSize/2.)/(E->arrayGeometry.pixelSizeX/hexFPM->fpmScale));
+    p2l->maskGeom.set_xy_m1(hexFPM->interpNSubPix.n_rows, hexFPM->interpNSubPix.n_cols, (E->arrayGeometry.physicalSize/2.)/(E->arrayGeometry.pixelSizeX/hexFPM->fpmScale));
     
     //    E->print("in set_geometry");
-    double cFRatio = p2l->focalRatio*2*E->beamRadiusPhysical;
+    double cFRatio = p2l->focalRatio*2*E->beamRadiusPhysical; // focal length at this point
 //    std::cout << "cFRatio set to: " << cFRatio << std::endl;
     for (int i=0; i<E->E[0][0]->n_slices; i++) {
         // lambdaFocalLength[i] = E->lambdaData[i].lambda*globalTelescope->get("primaryfRatio");
@@ -411,7 +445,8 @@ void fpmBinaryForPupToLyot::set_geometry(fpmPupToLyot *p2l, efield* E, double *l
     // mask.yy = system.optics.elem(i).yy;
     
     // params.fpm.flD = params.fpm.f*params.fpm.lambdaRef/params.primary.D; % define focal plane mask units of flD
-    double flD = globalTelescope->get("primaryfRatio")*referenceLambda;
+//    double flD = globalTelescope->get("primaryfRatio")*referenceLambda;
+    double flD = globalTelescope->compute_loD(referenceLambda);
     double fovFld = 2*outerRadiusFld;
     p2l->maskGeom.set_xy_m1(fpmMat.n_rows, fpmMat.n_cols, outerRadiusFld*flD);
     p2l->maskGeom.print("puplToLyot mask geometry");

@@ -60,7 +60,8 @@ efield* fraunhoferFocal::execute(efield* E, celem* prev, celem* next, double tim
 
 void fraunhoferFocal::set_geometry(void) {
     
-    scaleFlD = globalTelescope->get("primaryfLength")*referenceLambda/globalTelescope->get("primaryDiameter");
+//    scaleFlD = globalTelescope->get("primaryfLength")*referenceLambda/globalTelescope->get("primaryDiameter");
+    scaleFlD = globalTelescope->compute_loD(referenceLambda);
     arrayGeometry.set_geometry(scaleFlD, samplesPerflD, FOVflD);
 
 }

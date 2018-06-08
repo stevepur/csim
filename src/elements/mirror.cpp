@@ -30,7 +30,7 @@ efield* mirror::execute(efield* E, celem* prev, celem* next, double time) {
         for (int p=0; p<E->E[s].size(); p++) {
             for (int k=0; k<E->E[s][p]->n_slices; k++) {
                 double lambda = E->lambdaData[k].lambda;
-                E->E[s][p]->slice(k) = E->E[s][p]->slice(k) % exp((-2*2*M_PI/lambda)*i1*mirrorMat); // element-wise multiplication
+                E->E[s][p]->slice(k) = E->E[s][p]->slice(k) % exp((-mirrorSign*2*2*M_PI/lambda)*i1*mirrorMat); // element-wise multiplication
             }
         }
     }
@@ -63,7 +63,15 @@ void mirror::set(std::string fieldName, const char *arg) {
     else if (fieldName == "filename") {
         // arg is the .fits filename that contains the mirror definition
         init(arg);
-    } else if (!found)
+    }
+    else if (fieldName == "sign") {
+        double mSign = atof(arg);
+        if (mSign == -1 | mSign == 1)
+            mirrorSign = mSign;
+        else
+            std::cout << "!!!! illegal propagationSign, ignoring" << std::endl;
+    }
+    else if (!found)
         std::cout << "!!! mirror bad set field name: " << fieldName << std::endl;
 }
 

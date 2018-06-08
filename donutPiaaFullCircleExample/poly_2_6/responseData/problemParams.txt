@@ -1,0 +1,2 @@
+calibMaxIntensity: 229329.604278
+wavelengths: 6.175e-07 6.3375e-07 6.5e-07 6.6625e-07 6.825e-07 

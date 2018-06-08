@@ -1,0 +1,115 @@
+#
+# PIAACMC coronagraph
+#
+start
+	telescope
+	primaryDiameter:0.036
+	primaryFRatio:85.9
+	magnification:1.3376830156
+end
+# start here defining the input E-field
+start
+	efield
+	setSize:1024, 1024, 1
+	pointSource:1.0, 0.0, 0.0
+#	pointSource:1e-8, 3, 0.0
+# three sources making a triangle of radius 0.006 l/D
+#	pointSource:0.33333333333, 0.006, 0.0
+#	pointSource:0.33333333333, -0.003, 5.19615242270700e-003
+#	pointSource:0.33333333333, -0.003, 5.19615242270700e-003
+#	wavelength:650e-9
+	wavelengthBandwidth: 650e-9, 0.1, 5
+#	wavelengthBandwidth: 650e-9, 0.1, 20
+	beamRadiusPhysical:0.018
+	pixelScale:3.8671875E-05
+end
+# ------------------------
+# the coronagraph
+# ------------------------
+start
+	coronagraph
+	start
+		mask
+		filename:donutPiaa/Apodization2D_piaa1p4_l_D1024.fits
+		position:0
+		name:donut apodization
+	end
+	start
+		mirror
+		filename:donutPiaa/DM1.fits
+		position:0
+		name:dm1
+	end
+	start
+		fpmPupToLyot
+		name:FPM
+		position:0
+		focalRatio: 85.9
+		fRatioSign: -1
+		zoomFftSign: -1
+		disableForCalibration:on
+		start
+			fpmIntHexCMCForPupToLyot
+			zoomFactor: 132.987012987
+			start
+				complexHexMaskFPM
+				name:complexHexMaskFPM
+				maskNRings: 20
+				hexStep: 1
+				fpmArraySize: 2048
+				fpmScaleFactor: 0.9
+				hexGap: -0.0001
+				lambdaRef: 650e-9
+				fpmFRatio: 85.9
+				nSubPix: 64
+				fpmRadius: 1.85e-04
+				maskFilenameRoot:donutPiaa/mask_data
+				sagFilename:donutPiaaFullCircle/poly_2_8/optTest/bestOptVector.fits
+				# sagFilename:donutPiaa/3source/optTest/bestOptVector.fits
+			end
+		end
+	end
+	start
+		mask
+		filename:donutPiaa/lyotStopOpen.fits
+		position:0
+		name:Lyot stop
+	end
+	start
+		fraunhoferFocal
+		position:0
+		name:science CCD
+		referenceLambda:650e-9
+		samplesPerflD:2.5
+#		samplesPerflD:12
+		FOVflD:48
+	end
+end
+start
+	makeContrastCurve
+	filename:donutPiaa/contrastCurve.txt
+	draw:on
+	drawTo:12.0
+end
+start
+	regionContrast
+	referenceLambda:650e-9
+	# 2*1.3376830156, 8*1.3376830156
+	# radii:2.675366031200000,10.701464124799999
+#	radii:1.4, 10
+	radii:2, 6
+	anglesInDegrees:-180,180
+	filename:regionContrast.txt
+	draw:on
+end
+start
+	makeHexCFpmResponse
+	DataToOptimize:FPM,sags
+	outputDirectory:donutPiaaFullCircle/poly_2_6/responseData
+	start
+		regionContrast
+		referenceLambda:650e-9
+		radii:2,6
+		anglesInDegrees:-180,180
+	end
+end

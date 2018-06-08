@@ -67,6 +67,11 @@ void makeHexCFpmResponse::set(std::string fieldName, const char *arg) {
         std::cout << "component " << componentName << ", data " << dataName << std::endl;
         //        draw("initial FPM");
     }
+    else if (fieldName == "outputDirectory") {
+        // arg is a string
+        outputDirectory = new char[strlen(arg)+1];
+        strcpy(outputDirectory, arg);
+    }
     else if (fieldName == "draw") {
         // arg is a string
         if (!strcmp(arg, "on")) {
@@ -86,6 +91,7 @@ void makeHexCFpmResponse::set(std::string fieldName, const char *arg) {
 void makeHexCFpmResponse::compute_response(void) {
     arma::wall_clock timer;
     
+    std::cout << "makeHexCFpmResponse::compute_response" << std::endl;
     // compute the calibration normalization
     efield *calibEfield = new efield(*initialEfield);
     calibEfield->set("name", "calibration Efield");
@@ -93,7 +99,7 @@ void makeHexCFpmResponse::compute_response(void) {
     globalCoronagraph->set_calibration_state(true);
     timer.tic();
     globalCoronagraph->execute(calibEfield, 0);
-    std::cout << "contrast curve calibration csim execution time: " << timer.toc() << " seconds" << std::endl;
+    std::cout << "compute response calibration csim execution time: " << timer.toc() << " seconds" << std::endl;
     
     arma::cube calibIntensity;
     calibIntensity.zeros(size(*(calibEfield->E[0][0])));
@@ -128,12 +134,15 @@ void makeHexCFpmResponse::compute_response(void) {
     
 //    responseData *response = new responseData(regionPixelIndex.n_elem, nSags, calibEfield->E[0][0]->n_slices, calibEfield->E[0].size(), calibEfield->E.size());
     responseData *response = new responseData(regionPixelIndex.n_elem, nSags+1, calibEfield->E[0][0]->n_slices, calibEfield->E[0].size(), calibEfield->E.size());
-    response->set((std::string)"outputDirectory", "testResponse");
+    assert(outputDirectory);
+    response->set((std::string)"outputDirectory", outputDirectory);
+    response->set((std::string)"calibIntensity", calibMaxIntensity);
+    response->set_wavelengths(calibEfield->lambdaData);
     response->print("response data");
     
     globalCoronagraph->set_calibration_state(false);
     for (int sag=0; sag<=nSags; sag++){
-//    for (int sag=0; sag<nSags; sag++){
+//    for (int sag=0; sag<1; sag++){
         globalCoronagraph->set_optimization_data(componentName, "useOnlyThisHex", &sag);
         
         bool doBabinet = false;

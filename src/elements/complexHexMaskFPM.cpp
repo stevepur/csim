@@ -45,6 +45,19 @@ arma::cx_mat complexHexMaskFPM::make_complex_intpolated_mask(double lambda, doub
     std::complex<double> i1(0, 1);
 
     // set the sag values
+    assert(interpHexNum.n_rows > 0);
+    assert(interpHexNum.n_cols > 0);
+    assert(interpHexNum.n_slices > 0);
+    assert(interpSagVals.n_rows > 0);
+    assert(interpSagVals.n_cols > 0);
+    assert(interpSagVals.n_slices > 0);
+    assert(interpNSubPix.n_rows > 0);
+    assert(interpNSubPix.n_cols > 0);
+    assert(interpNSubPix.n_slices > 0);
+    assert(interpNSubPixToUse.n_rows > 0);
+    assert(interpNSubPixToUse.n_cols > 0);
+    assert(interpNSubPixToUse.n_slices > 0);
+    assert(fpmSags.n_elem > 0);
 #pragma omp parallel
     {
 #pragma omp for
@@ -71,7 +84,7 @@ arma::cx_mat complexHexMaskFPM::make_complex_intpolated_mask(double lambda, doub
     }
     
     // make the interpolated complex mask
-    arma::cx_mat complexIntMask = sum(interpNSubPixToUse % exp(-2*M_PI*i1*2.0*interpSagVals/lambda), 2)/(nSubPix*nSubPix);
+    arma::cx_mat complexIntMask = sum(interpNSubPixToUse % exp(phaseSign*2*M_PI*i1*2.0*interpSagVals/lambda), 2)/(nSubPix*nSubPix);
     arma::mat maskSags = sum(interpNSubPixToUse % interpSagVals, 2)/(nSubPix*nSubPix);
 //    save_mat("complexIntMaskSags.fits", maskSags);
 //    draw_mat(arma::abs(complexIntMask), "mask");
@@ -119,6 +132,9 @@ void complexHexMaskFPM::set(std::string fieldName, const char *arg) {
     } else if (fieldName == "lambdaRef") {
         // arg is a single double
         lambdaRef = atof(arg);
+    } else if (fieldName == "phaseSign") {
+        // arg is a single double
+        phaseSign = atof(arg);
     } else if (fieldName == "fpmFRatio") {
         // arg is a single double
         fpmFRatio = atof(arg);
@@ -172,6 +188,9 @@ void complexHexMaskFPM::init_mask(void) {
     if (fileStatus) {
         std::cout << "did not find mask interpolation data files, creating" << std::endl;
         compute_hex_centers();
+        if (fpmSags.n_elem == 0)
+            fpmSags.set_size(hexNum.n_elem);
+        std::cout << "fpmSags.n_elem = " << fpmSags.n_elem << std::endl;
         make_hex_array();
         make_interpolation_data();
         arma::mat testSagArray = sum(interpNSubPix % interpSagVals, 2)/(nSubPix*nSubPix);
@@ -182,6 +201,10 @@ void complexHexMaskFPM::init_mask(void) {
         fpmScale = compute_fpmScale(interpNSubPix.n_rows);
         std::cout << "fpmScale = " << fpmScale << std::endl;
         interpSagVals = arma::zeros<arma::cube>(interpNSubPix.n_rows, interpNSubPix.n_cols, interpNSubPix.n_slices);
+        if (fpmSags.n_elem == 0)
+            fpmSags = arma::zeros<arma::vec>(max(max(interpHexNum.slice(0)))+1);
+        std::cout << "fpmSags.n_elem = " << fpmSags.n_elem << std::endl;
+        
     }
     interpNSubPixToUse = interpNSubPix;
 }
@@ -258,7 +281,7 @@ void complexHexMaskFPM::compute_hex_centers(void) {
     hexX.resize(goodRingIdx.n_elem);
     hexY.resize(goodRingIdx.n_elem);
     hexRing.resize(goodRingIdx.n_elem);
-    
+    std::cout << "# of good hexes: " << hexNum.n_elem << std::endl;
     
     FILE *outFile = fopen("hex_positions.txt", "w");
     for (int i=0; i<hexNum.n_elem; i++)
@@ -420,6 +443,7 @@ void complexHexMaskFPM::print(const char *hdr) {
     std::cout << "hexStep = " << hexStep << std::endl;
     std::cout << "fpmScaleFactor = " << fpmScaleFactor << std::endl;
     std::cout << "hexGap = " << hexGap << std::endl;
+    std::cout << "phaseSign = " << phaseSign << std::endl;
     std::cout << "lambdaRef = " << lambdaRef << std::endl;
     std::cout << "fpmFRatio = " << fpmFRatio << std::endl;
     std::cout << "fpmRadius = " << fpmRadius << std::endl;

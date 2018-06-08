@@ -36,14 +36,18 @@ void optHexRespObjective::execute(arma::mat& optData, arma::rowvec& objVal) {
     for (int s=0; s<response->M.size(); s++) {
         for (int p=0; p<response->M[s].size(); p++) {
             for (int sl=0; sl<response->M[s][p]->n_slices; sl++) {
-                double a = -4*M_PI/response->wavelengths[sl];
+                double a = phaseSign*4*M_PI/response->wavelengths[sl];
                 #pragma omp parallel for
                 for (int i=0; i<fullOptData.n_cols; i++)
                     rotatedPhases(arma::span::all, i) = exp(i1*a*fullOptData(arma::span::all, i));
 //                std::cout << "computed rotatedPhases: " << size(rotatedPhases) << std::endl;
+//                std::cout << "mean(mean(rotatedPhases)): " << mean(mean(rotatedPhases)) << std::endl;
+
                 arma::cx_mat E = response->M[s][p]->slice(sl) * rotatedPhases;
+//                std::cout << "mean(mean(E)): " << mean(mean(E)) << std::endl;
 //                std::cout << "computed E: " << size(E) << std::endl;
                 pixEnergy += real(E % arma::conj(E));
+//                std::cout << "mean(mean(pixEnergy)): " << mean(mean(pixEnergy)) << std::endl;
 //                std::cout << "computed pixEnergy: " << size(pixEnergy) << std::endl;
             }
         }
@@ -92,6 +96,10 @@ void optHexRespObjective::set(std::string fieldName, const char *arg) {
         }
         else
             std::cout << "!!! differentialEvolutionOptimizer initType bad arg: " << arg << std::endl;
+    }
+    else if (fieldName == "phaseSign") {
+        // arg is a single double
+        phaseSign = atof(arg);
     }
     else
         std::cout << "!!! optHexRespObjective bad set field name: " << fieldName << std::endl;

@@ -1,0 +1,1 @@
+nRows = 636, nCols = 500, nSlices = 5, nPolarizations = 1, nSources = 3

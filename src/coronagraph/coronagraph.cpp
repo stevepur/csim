@@ -55,6 +55,7 @@ void coronagraph::init(initCommandSet*& cmdBlocks) {
     // commands in teh command block which define parameters of that celem.
 
     // an initCommandSet contains an array commandList of commands.
+    std::cout << "coronagraph::init" << std::endl;
     std::vector<initCommandSet*> subBlocks = cmdBlocks->find_command_blocks();
 //    std::cout << "found " << subBlocks.size() << " subblocks" << std::endl;
 
@@ -66,7 +67,11 @@ void coronagraph::init(initCommandSet*& cmdBlocks) {
 //        subBlocks[j]->print(str);
         std::cout << "creating a " << subBlocks[j]->commandList[0]->getCmdStr() << std::endl;
         // empty celem
-        if (!strcmp(subBlocks[j]->commandList[0]->getCmdStr(), "optElem")) {
+        if (!strcmp(subBlocks[j]->commandList[0]->getCmdStr(), "coronagraph")) {
+            ;
+        }
+        // break execution celem (stops coronagraph execution)
+        else if (!strcmp(subBlocks[j]->commandList[0]->getCmdStr(), "optElem")) {
             celem *newE = new celem();
             elemList.push_back(newE);
         }
@@ -156,6 +161,7 @@ void coronagraph::execute(efield *inE, double time, bool showTimes) {
 
     // traverse elemList
     for (std::list<celem*>::iterator it = elemList.begin(); it != elemList.end(); ++it) {
+//        std::cout << "======================= executing " << (*it)->name <<  std::endl;
         timer.tic();
         // if we're the first celem in elemList...
         if (it == elemList.begin()) {

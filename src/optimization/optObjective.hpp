@@ -34,7 +34,8 @@ public:
 
 class optHexRespObjective : public optObjective {
     responseData *response = NULL;
-    arma::cx_mat rotatedPhases;   
+    arma::cx_mat rotatedPhases;
+    double phaseSign = 1.0;
     
 public:
     

@@ -3,17 +3,28 @@
 #
 start
 	telescope
-	primaryDiameter:2.4
-	primaryFRatio:15.1
+	primaryDiameter:16.195
+	primaryFRatio:19.72
 end
 # start here defining the input E-field
 start
 	efield
-	setSize:1024, 1024, 1
-	constantValue:1
-	wavelength:5.62175e-07
-	beamRadiusPhysical:0.022
-	pixelScale:1.100e-04
+	setSize:2048, 2048, 1
+	pointSource:1.0, 0.0, 0.0
+# three sources making a triangle of radius 0.004 l/D
+#	pointSource:0.33333333333, 0.004, 0.0
+#	pointSource:0.33333333333, -0.002, 0.003464101615138
+#	pointSource:0.33333333333, -0.002, 0.003464101615138
+# three sources making a triangle of radius 0.008 l/D
+#	pointSource:0.33333333333, 0.008, 0.0
+#	pointSource:0.33333333333, -0.004, 0.006928203230276
+#	pointSource:0.33333333333, -0.004, -0.006928203230276
+#	pointSource:1e-7, 3.0, 1.0
+	wavelength:1.3e-6
+#	wavelength:1.235e-06
+#	wavelengthBandwidth: 1.3e-6, 0.1, 5
+	beamRadiusPhysical:0.0188474
+	pixelScale:0.00003916814414
 end
 # ------------------------
 # the coronagraph
@@ -22,36 +33,15 @@ start
 	coronagraph
 	start
 		mask
-		filename:c1/pup_1024.fits
+		filename:segmented/pupil_2048.fits
 		position:0
 		# give it a name
 		name:entrance pupil
 	end
-	# identity propagator
-	start
-		propagator:identity
-	end
-#	start
-#		mirror
-#		filename:c1/dans_abberr.fits
-#		position:0
-#		# give it a name
-#		name:TT mirror
-#	end
-	# fresnel propagator
-	start
-		fresnelPropagator
-		# give it a name
-		name:propagrator from TT mirror to PIAA m0
-		propagationSign:1
-#		draw:preExecute
-#		draw:postExecute
-#		save:postExecute
-		end
 	start
 		mirror
-		filename:c1/piaam0z.fits
-		position:1.199997
+		filename:segmented/piaam0z.fits
+		position:0
 		# give it a name
 		name:PIAA m0
 #		draw:onInit
@@ -60,15 +50,15 @@ start
 		fresnelPropagator
 		# give it a name
 		name:propagrator from PIAA m0 to PIAA m1
-		propagationSign:-1
+		propagationSign:1
 #		draw:preExecute
 #		draw:postExecute
 #		save:postExecute
 	end
 	start
 		mirror
-		filename:c1/piaam1z.fits
-		position:-1.102609
+		filename:segmented/piaam1z.fits
+		position:0.405000
 		# give it a name
 		name:PIAA m1
 #		save:postExecute
@@ -77,8 +67,8 @@ start
 	# mask element
 	start
 		mask
-		filename:c1/dans_piaam1Mask.fits
-		position:-1.102609
+		filename:segmented/dans_stopPup.fits
+		position:0.405000
 		# give it a name
 		name:PIAA m1 mask
 #		save:postExecute
@@ -87,31 +77,59 @@ start
 	start
 		fpmPupToLyot
 		name:FPM
-		position:-1.102609
-		focalRatio: 80
+		position:0.405000
+		focalRatio: 85.9
 		fRatioSign: -1
 		zoomFftSign: -1
 		disableForCalibration:on
 		start
-			fpmCMCForPupToLyot
-			maskFilename:tmp_fpmCA_ampl.fits,tmp_fpmCA_pha.fits
-			fpmMatScale:1.098e-06
-			maskIndex: 4
+			fpmIntHexCMCForPupToLyot
+			zoomFactor: 8
+			start
+				complexHexMaskFPM
+				name:complexHexMaskFPM
+				maskNRings: 8
+				hexStep: 1
+				fpmArraySize: 2048
+				fpmScaleFactor: 0.9
+				hexGap: -0.0001
+				phaseSign: -1
+				lambdaRef: 1.3e-6
+#				lambdaRef: 1.235e-06
+				fpmFRatio: 85.9
+				nSubPix: 64
+				# fpm radius = 2 f*lambdaRef/D = 2*lambdaRef*fpmFRatio
+				fpmRadius: 2.2334e-04
+#				sagFilename:segmented/8Rings/luvior_olivier_sags.fits
+				sagFilename:segmented/8Rings/monoTest/bestOptVector.fits
+#				sagFilename:segmented/8Rings/monoTest/Luvior_mono_best.fits
+				maskFilenameRoot:segmented/8Rings/luvior_base_mask_data
+			end
 		end
 #		draw:postExecute
-		save:preExecute
-		save:postExecute
+#		save:preExecute
+#		save:postExecute
 	end
 #	start
 #		breakExecution
 #	end
 	start
-		mask
-		filename:c1/dans_postFPMmask.fits
-		position:-1.102609
+		fresnelPropagator
 		# give it a name
-		name:post FPM mask
+		name:propagrator from FPM to pupil
+		propagationSign:-1
+#		draw:preExecute
+#		draw:postExecute
 #		save:postExecute
+	end
+	start
+		mask
+		filename:segmented/LyotStop0.fits
+		position:-0.186422
+		# give it a name
+		name:Lyot mask 0
+#		save:postExecute
+#		draw:postExecute
 #		draw:onInit
 	end
 	start
@@ -125,29 +143,22 @@ start
 	end
 	start
 		mask
-		filename:c1/LyotStop0.fits
-		position:-0.092609
+		filename:segmented/LyotStop1.fits
+		position:0.173206
 		# give it a name
 		name:Lyot mask 0
 #		save:postExecute
+#		draw:postExecute
 #		draw:onInit
 	end
 	start
-		mask
-		filename:c1/dans_backEndPupStop.fits
-		position:-0.092609
-		# give it a name
-		name:back-end pupil stop
-#		save:postExecute
-#		draw:onInit
-	end
-	start 
 		fraunhoferFocal
 		position:0
 		name:science CCD
-		referenceLambda:5.65e-7
-		samplesPerflD:2.4
-		FOVflD:418
+		referenceLambda:1.3e-6
+		samplesPerflD:2.2
+		FOVflD:965
+#		save:postExecute
 #		draw:postExecute
 #		draw:preExecute
 	end
@@ -155,10 +166,31 @@ end
 #start
 #	execute
 #end
+#start
+#	makeContrastCurve
+#	filename:contrastCurve_olivier.txt
+#	draw:on
+#	drawTo:12.0
+#end
 start
-	makeContrastCurve
-	filename:contrastCurve.txt
+	regionContrast
+	referenceLambda:1.3e-6
+	radii:2,8
+#	radii:1,3
+#	anglesInDegrees:-20,20
+	anglesInDegrees:-90,90
+	filename:regionContrast.txt
 	draw:on
-	drawTo:12.0
 end
+#start
+#	makeHexCFpmResponse
+#	DataToOptimize:FPM,sags
+#	outputDirectory:segmented/responseData
+#	start
+#		regionContrast
+#		referenceLambda:1.3e-6
+#		radii:2,8
+#		anglesInDegrees:-90,90
+#	end
+#end
 

@@ -1,1 +1,82 @@
-this is csim!
+csim (ALWAYS LOWER CASE) is a coronagraph design system designed for easy extensibility.
+
+==== csim requires the following libraries:
+
+Generally speaking, later librarie versions than listed below should be OK, but sometimes the APIs change.  So beware.
+
+The followng should be obtained via your favorite package manager:
+libtool
+automake
+autoconf
+g++-mp-6 (or later, openmp compatibility is required)
+lapack
+
+I got the following libraries directly from their websites and built them in a local directory
+- cfitsio https://heasarc.gsfc.nasa.gov/docs/software/fitsio/fitsio.html
+- fftw (>= 3.3.7): http://www.fftw.org
+    when building fftw, make sure that openmp is enabled by using
+    ./configure --enable-openmp CC="g++-mp-6"
+    replacing the g++-mp-6 with your actual compiler
+- armadillo (>= 7.800.1): http://arma.sourceforge.net
+
+If you have a gpu you need the NVidia CUDA library, version >= 8.0
+
+===================================================
+==== building csim:
+
+0) be in the top csim directory, which contains directories like src etc.
+
+1) edit configure.ac, changing whatever does not look right to you, probably the email in AC_INIT and maybe the compiler in AC_PROG_CXX.  Leave AC_CONFIG_FILES alone.
+
+2) if you are not going to use a gpu, copy Makefile_no_gpu.am to Makefile.am.  If you are going to use a gpu, copy Makefile_gpu.am to Makefile.am.
+
+3) edit the paths in the following files to point to the appropiate places and versions of the libraries/headers:
+
+Makefile.am (this is the big one)  Note that the entries in *_LDADD cannot have a space (including "\ ") in the pathename
+coronagraph/Makefile.am
+data/Makefile.am
+elements/Makefile.am
+lib/Makefile.am
+optimization/Makefile.am
+telescope/Makefile.am (actually currently no changes are needed here)
+tools/Makefile.am (actually currently no changes are needed here)
+
+(someday I'll figure out how to make it so you only have to change a single file that sets these paths)
+
+4) configure and make
+
+type the following in the top csim directory:
+
+autoreconf --install
+./configure 'CXXFLAGS= -g -O2 -Wunknown-pragmas -fopenmp'
+make clean
+make
+
+This will build the executables csim and test (and csim_gpu if you used the Makefile_gpu.am file in step 2).  Ignore test for now - it's out of date.  So long as you don't add source files, you can recompile by typing "make".
+
+If you do have a gpu, before running csim_gpu type
+
+export LD_LIBRARY_PATH=/Developer/NVIDIA/CUDA-8.0/lib
+export NVBLAS_CONFIG_FILE=/Users/steve/programming_projects/gnu/armadillo-7.800.1/examples/nvblas.conf
+
+with LD_LIBRARY_PATH pointing at your CUDA library, and NVBLAS_CONFIG_FILE probably pointing at the sample nvblas.conf file that came with the CUDA library.
+
+
+
+===================================================
+==== running csim:
+
+csim runs a coronagraph completely specified by an input script.  This input script specifies each coronagraph component.
+To run without the gpu:
+csim <input script>
+
+To run with the gpu, if you used Makefile_gpu.am in step 2:
+csim_gpu <input script>
+
+
+The first time you run csim with a new input script, you should run it as
+csim -w <input script>
+which will generate the FFT wisdom needed to do fast FFTs for the array sizes in this input script, which is saved in the file "fft_wisdom.dat".  This will be very slow the first time, but will be fast with every later run (without the -w flag) of the same input script.  When you run a new input script, use the -w flag again.  The FFT wisdom is cumulative, adding to fft_wisdom.dat every time it encounters a new array size.
+
+
+

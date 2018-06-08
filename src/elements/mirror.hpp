@@ -14,7 +14,8 @@
 
 class mirror : public celem {
     arma::mat mirrorMat;
-    
+    double mirrorSign = 1;
+   
 public:
     mirror();
     mirror(const char *inName);

@@ -19,6 +19,7 @@ class telescope {
     double primaryDiameter = 0;
     double primaryfRatio = 0;
     double primaryfLength = 0;
+    double magnification = 1;
     
 public:
     telescope(initCommandSet*& cmdBlocks);
@@ -27,6 +28,8 @@ public:
     
     void set(std::string fieldName, const char *value);
     double get(std::string fieldName);
+    
+    double compute_loD(double lambda);
     
     void print(const char *header = "");
 };

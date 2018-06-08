@@ -1,0 +1,39 @@
+#
+# optimize a PIAACMC hex mask
+#
+start
+	differentialEvolutionOptimizer
+	start
+		optHexRespObjective
+		responseDirectory:donutPiaaFullCircle/3source_2_6/responseData
+		objectiveType:mean
+	end
+	# deRand1 or deLocalToBest1 or eitherOr
+	startStrategy:deLocalToBest1
+	baseStrategy:eitherOr
+	endStrategy:deLocalToBest1
+	reinitStrategy:eitherOr
+	populationSize:600
+#	initPopulationMean:zero
+	initPopulationMean:donutPiaaFullCircle/poly_2_6/optTest2/bestOptVector.fits
+#	initSpread:0.0
+	initSpread:1.0
+	reinitCompression:1
+	reinitSpread:5e-10
+	globalBounds:-5e-7, 5e-7
+	initBounds:-1e-9, 1e-9
+	initType:uniformRandom
+	maxIterations:1000000
+	stopObjectiveValue:1e-12
+	stopPopulationSpread:0
+	reinitChangefracThreshold:0.001
+	maxSmallChange:10
+	maxRetries:5000000
+	fWeight:0.5
+	crossoverProb:1.0
+	baseStrategySpreadSwitch:1e-7
+	endStrategySpreadSwitch:0
+	outputInterval:100
+	outputDirectory:donutPiaaFullCircle/3source_2_6/optTest
+	saveState:0
+end

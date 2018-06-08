@@ -372,6 +372,7 @@ void differentialEvolutionOptimizer::find_best_member(void) {
     // population is optVecSize x populationSize
     // populationMean is as column vector, need to turn into row
 //    std::cout << "starting find_best_member" << std::endl;
+//    std::cout << "mean(objectiveValue) = " << mean(objectiveValue) << std::endl;
     int bestIndex = objectiveValue.index_min();
     if (objectiveValue(bestIndex) < bestVal) {
         bestVal = objectiveValue(bestIndex);

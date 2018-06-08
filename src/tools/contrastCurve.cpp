@@ -88,7 +88,7 @@ void contrastCurve::make_contrast_curve(void) {
     std::cout << "contrast curve csim execution time: " << timer.toc() << " seconds" << std::endl;
     
     double lambda = calibEfield->lambdaData[(int) round(calibEfield->E[0][0]->n_slices/2)].lambda;
-    double loD = globalTelescope->get("primaryfLength")*lambda/globalTelescope->get("primaryDiameter");
+    double loD = globalTelescope->compute_loD(lambda);
     std::cout << "lambda = " << lambda << ", loD = " << loD << std::endl;
     
     arma::cube calibIntensity;
