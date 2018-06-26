@@ -28,18 +28,18 @@ If you have a gpu you need the NVidia CUDA library, version >= 8.0
 
 1) edit configure.ac, changing whatever does not look right to you, probably the email in AC_INIT and maybe the compiler in AC_PROG_CXX.  Leave AC_CONFIG_FILES alone.
 
-2) if you are not going to use a gpu, copy Makefile_no_gpu.am to Makefile.am.  If you are going to use a gpu, copy Makefile_gpu.am to Makefile.am.
+2) if you are not going to use a gpu, copy src/Makefile_no_gpu.am to src/Makefile.am.  If you are going to use a gpu, copy src/Makefile_gpu.am to src/Makefile.am.
 
 3) edit the paths in the following files to point to the appropiate places and versions of the libraries/headers:
 
-Makefile.am (this is the big one)  Note that the entries in *_LDADD cannot have a space (including "\ ") in the pathename
-coronagraph/Makefile.am
-data/Makefile.am
-elements/Makefile.am
-lib/Makefile.am
-optimization/Makefile.am
-telescope/Makefile.am (actually currently no changes are needed here)
-tools/Makefile.am
+src/Makefile.am (this is the big one)  Note that the entries in *_LDADD cannot have a space (including "\ ") in the pathename
+src/coronagraph/Makefile.am
+src/data/Makefile.am
+src/elements/Makefile.am
+src/lib/Makefile.am
+src/optimization/Makefile.am
+src/telescope/Makefile.am (actually currently no changes are needed here)
+src/tools/Makefile.am
 
 (someday I'll figure out how to make it so you only have to change a single file that sets these paths)
 
