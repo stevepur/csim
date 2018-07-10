@@ -29,7 +29,7 @@ public:
     
     virtual void set_geometry(fpmPupToLyot *prop, efield* E, double *lambda, double *lambdaFocalLength) {}
     virtual void set_fpmMatAmp(fpmPupToLyot *p2l, double lambda, int sl) {}
-    virtual void apply_babinet(fpmPupToLyot *p2l) {}
+//    virtual void apply_babinet(fpmPupToLyot *p2l, int sl) {}
     virtual void draw(const char *title = ""){}
     virtual void get_optimization_data(const char *dataName, void *data) {}
     virtual void set_optimization_data(const char *dataName, void *data) {}
@@ -56,7 +56,7 @@ public:
     void initMaskReIm(const char *filenameRe, const char *filenameIm);
     void set_geometry(fpmPupToLyot *prop, efield* E, double *lambda, double *lambdaFocalLength);
     void set_fpmMatAmp(fpmPupToLyot *p2l, double lambda, int sl);
-    void apply_babinet(fpmPupToLyot *p2l);
+//    void apply_babinet(fpmPupToLyot *p2l, int sl);
     void draw(const char *title = "");
 };
 
@@ -77,7 +77,7 @@ public:
     void get_optimization_data(const char *dataName, void *data);
     void set_optimization_data(const char *dataName, void *data);
     
-    void apply_babinet(fpmPupToLyot *p2l);
+//    void apply_babinet(fpmPupToLyot *p2l, int sl);
     void draw(const char *title = "");
 };
 
@@ -96,7 +96,7 @@ public:
     void set(fpmPupToLyot *p2l, std::string fieldName, const char *arg);
     void set_geometry(fpmPupToLyot *prop, efield* E, double *lambda, double *lambdaFocalLength);
     void set_fpmMatAmp(fpmPupToLyot *p2l, double lambda, int sl);
-    void apply_babinet(fpmPupToLyot *p2l) {}
+//    void apply_babinet(fpmPupToLyot *p2l, int sl) {}
     void draw(const char *title = "");
 };
 
@@ -109,24 +109,24 @@ class fpmPupToLyot : public celem {
     friend class fpmIntHexCMCForPupToLyot;
     friend class fpmBinaryForPupToLyot;
 
-    arma::cx_mat fpmMatAmp;
-    arma::cx_mat maskHat;
-    arma::cx_mat fftMaskHat;
-    
-    arma::cx_mat paddedE;
-    arma::cx_mat fftPaddedE;
-    arma::cx_mat fftMHatTimesfftPaddedE;
-    
-    zoomFft propZoomFft;
+    arma::cx_cube fpmMatAmpCalib;
+    arma::cx_cube fpmMatAmp;
+    arma::cx_cube fftMaskHatCalib;
+    arma::cx_cube fftMaskHat;
 
+    arma::cx_cube paddedE;
+    double *lambdaFocalLength = NULL;
+    
     arrayGeom maskGeom;
     arrayGeom paddedGeom;
     
     fpmForPupilToLyot *mask;
-    
-    fft maskFft;
-    fft paddedEFft;
-    ifft myIfft;
+
+    zoomFft *propZoomFft;
+
+    fft *paddedEFft;
+    ifft *myIfft;
+    bool maskIsInited = false;
     
     double focalRatio = -1; // focal length at this point in the coronagraph
     double fRatioSign = 1; // sign convention for fratio in zoomFFT

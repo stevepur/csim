@@ -13,9 +13,85 @@
 #include "csim_plot.hpp"
 
 // set up array geometry including pixel radius and angle
-void arrayGeom::set_geometry(int nRows, int nCols, double physicalRadius, bool display) {
-    
-    set_xy_m1(nRows, nCols, physicalRadius, display);
+void arrayGeom::set_geometry(arma::cx_cube *E, double pixelScale, double origin, bool display) {
+    set_geometry(E->n_cols, E->n_rows, pixelScale, pixelScale, origin, origin, display);
+}
+
+void arrayGeom::set_geometry(arma::cx_mat *E, double pixelScale, double origin, bool display) {
+    set_geometry(E->n_cols, E->n_rows, pixelScale, pixelScale, origin, origin, display);
+}
+
+void arrayGeom::set_geometry(arma::cube *E, double pixelScale, double origin, bool display) {
+    set_geometry(E->n_cols, E->n_rows, pixelScale, pixelScale, origin, origin, display);
+}
+
+void arrayGeom::set_geometry(arma::mat *E, double pixelScale, double origin, bool display) {
+    set_geometry(E->n_cols, E->n_rows, pixelScale, pixelScale, origin, origin, display);
+}
+
+void arrayGeom::set_xy(arma::cx_cube *E, double pixelScale, double origin, bool display) {
+    set_xy(E->n_cols, E->n_rows, pixelScale, pixelScale, origin, origin, display);
+}
+
+void arrayGeom::set_xy(arma::cx_mat *E, double pixelScale, double origin, bool display) {
+    set_xy(E->n_cols, E->n_rows, pixelScale, pixelScale, origin, origin, display);
+}
+
+void arrayGeom::set_xy(arma::cube *E, double pixelScale, double origin, bool display) {
+    set_xy(E->n_cols, E->n_rows, pixelScale, pixelScale, origin, origin, display);
+}
+
+void arrayGeom::set_xy(arma::mat *E, double pixelScale, double origin, bool display) {
+    set_xy(E->n_cols, E->n_rows, pixelScale, pixelScale, origin, origin, display);
+}
+
+//
+
+void arrayGeom::set_geometry(arma::cx_cube& E, double pixelScale, double origin, bool display) {
+    set_geometry(E.n_cols, E.n_rows, pixelScale, pixelScale, origin, origin, display);
+}
+
+void arrayGeom::set_geometry(arma::cx_mat& E, double pixelScale, double origin, bool display) {
+    set_geometry(E.n_cols, E.n_rows, pixelScale, pixelScale, origin, origin, display);
+}
+
+void arrayGeom::set_geometry(arma::cube& E, double pixelScale, double origin, bool display) {
+    set_geometry(E.n_cols, E.n_rows, pixelScale, pixelScale, origin, origin, display);
+}
+
+void arrayGeom::set_geometry(arma::mat& E, double pixelScale, double origin, bool display) {
+    set_geometry(E.n_cols, E.n_rows, pixelScale, pixelScale, origin, origin, display);
+}
+
+void arrayGeom::set_xy(arma::cx_cube& E, double pixelScale, double origin, bool display) {
+    set_xy(E.n_cols, E.n_rows, pixelScale, pixelScale, origin, origin, display);
+}
+
+void arrayGeom::set_xy(arma::cx_mat& E, double pixelScale, double origin, bool display) {
+    set_xy(E.n_cols, E.n_rows, pixelScale, pixelScale, origin, origin, display);
+}
+
+void arrayGeom::set_xy(arma::cube& E, double pixelScale, double origin, bool display) {
+    set_xy(E.n_cols, E.n_rows, pixelScale, pixelScale, origin, origin, display);
+}
+
+void arrayGeom::set_xy(arma::mat& E, double pixelScale, double origin, bool display) {
+    set_xy(E.n_cols, E.n_rows, pixelScale, pixelScale, origin, origin, display);
+}
+
+//
+
+void arrayGeom::set_geometry(int N, double pixelScale, double origin, bool display) {
+    set_geometry(N, N, pixelScale, pixelScale, origin, origin, display);
+}
+
+void arrayGeom::set_geometry(int nX, int nY, double pixelScale, double origin, bool display) {
+    set_geometry(nX, nY, pixelScale, pixelScale, origin, origin, display);
+}
+
+void arrayGeom::set_geometry(int nX, int nY, double pixelScaleX, double pixelScaleY, double oX, double oY, bool display) {
+
+    set_xy(nX, nY, pixelScaleX, pixelScaleY, oX, oY, display);
     
     set_mesh();
     
@@ -26,50 +102,73 @@ void arrayGeom::set_geometry(int nRows, int nCols, double physicalRadius, bool d
 }
 
 // set up just the x and y coordinates of each pixel
-void arrayGeom::set_xy(int nRows, int nCols, double physicalRadius, bool display) {
-    
-    physicalSize = 2*physicalRadius;
-    physicalSizeX = physicalSize;
-    physicalSizeY = physicalSize;
-    pixelSizeX = physicalSizeX/nCols;
-    pixelSizeY = physicalSizeY/nRows;
-    
-    // matlab: plane.x = ((1:plane.N) - 1 - plane.N/2)/(plane.N)*plane.D;
-    pixelX = arma::zeros<arma::vec>(nCols);
-    for (int i=0; i<nCols; i++)
-        pixelX[i] = ((double) i - ((double)nCols)/2.)*pixelSizeX;
-    pixelY = arma::zeros<arma::vec>(nRows);
-    for (int i=0; i<nRows; i++)
-        pixelY[i] = ((double) i - ((double)nRows)/2.)*pixelSizeY;
-    
-    if (display) {
-        print();
-        draw();
-    }
+void arrayGeom::set_xy(int N, double pixelScale, double origin, bool display) {
+    set_xy(N, N, pixelScale, pixelScale, origin, origin, display);
 }
 
-void arrayGeom::set_xy_m1(int nRows, int nCols, double physicalRadius, bool display) {
-    
-    physicalSize = 2*physicalRadius;
-    physicalSizeX = physicalSize;
-    physicalSizeY = physicalSize;
-    pixelSizeX = physicalSizeX/nCols;
-    pixelSizeY = physicalSizeY/nRows;
-    
+void arrayGeom::set_xy(int nX, int nY, double pixelScale, double origin, bool display) {
+    set_xy(nX, nY, pixelScale, pixelScale, origin, origin, display);
+}
+
+void arrayGeom::set_xy(int nX, int nY, double pixelScaleX, double pixelScaleY, double oX, double oY, bool display) {
+
+    physicalSizeX = pixelScaleX*nX;
+    physicalSizeY = pixelScaleY*nY;
+    pixelSizeX = pixelScaleX;
+    pixelSizeY = pixelScaleY;
+    originX = oX;
+    originY = oY;
+
+    physicalSize = physicalSizeX;
+
     // sci.x = -(sci.gridsize - sci.dx)/2 : sci.dx : (sci.gridsize - sci.dx)/2;
-    pixelX = arma::zeros<arma::vec>(nCols);
-    for (int i=0; i<nCols; i++)
-        pixelX[i] = -(physicalSizeX - pixelSizeX)/2.0 + i*pixelSizeX;
-    pixelY = arma::zeros<arma::vec>(nRows);
-    for (int i=0; i<nRows; i++)
-        pixelY[i] = -(physicalSizeY - pixelSizeY)/2.0 + i*pixelSizeY;
-
+    // this is symmetric:
+    // i=0 => pixelX = -(physicalSizeX - pixelSizeX)/2.0;
+    // i=nCols-1 => pixelX[ = -(physicalSizeX - pixelSizeX)/2.0 + (nCols - 1)*pixelSizeX
+    //          = -physicalSizeX/2.0 + pixelSizeX/2.0 + nCols*pixelSizeX - pixelSizeX
+    //          = -physicalSizeX/2.0 + pixelSizeX/2.0 + physicalSizeX - pixelSizeX
+    //          = (physicalSizeX - pixelSizeX)/2.0
+    pixelX = arma::zeros<arma::vec>(nX);
+    for (int i=0; i<nX; i++)
+        pixelX[i] = -(physicalSizeX - pixelSizeX)/2.0 + i*pixelSizeX - originX;
+    pixelY = arma::zeros<arma::vec>(nY);
+    for (int i=0; i<nY; i++)
+        pixelY[i] = -(physicalSizeY - pixelSizeY)/2.0 + i*pixelSizeY - originY;
+    
     if (display) {
         print();
         draw();
     }
 }
 
+void arrayGeom::set_xy_offset_m1(int nX, int nY, double pixelScale, bool display) {
+    
+    physicalSizeX = pixelScale*nX;
+    physicalSizeY = pixelScale*nY;
+    pixelSizeX = pixelScale;
+    pixelSizeY = pixelScale;
+
+    physicalSize = physicalSizeX;
+
+    // matlab: plane.x = ((1:plane.N) - 1 - plane.N/2)/(plane.N)*plane.D;
+    // this is not symmetric:
+    // i=0 => pixelX = - (nCols/2.)*pixelSizeX
+    // i=nCols-1 => pixelX = (nCols - 1 - nCols/2.)*pixelSizeX
+    //                  = (nCols/2. - 1)*pixelSizeX
+    pixelX = arma::zeros<arma::vec>(nX);
+    for (int i=0; i<nX; i++)
+        pixelX[i] = ((double) i - ((double)nX)/2.)*pixelSizeX;
+    pixelY = arma::zeros<arma::vec>(nY);
+    for (int i=0; i<nY; i++)
+        pixelY[i] = ((double) i - ((double)nY)/2.)*pixelSizeY;
+    
+    if (display) {
+        print();
+        draw();
+    }
+}
+
+/*
 // set up array geometry including pixel radius and angle
 void arrayGeom::set_geometry(double flD, double samplesPerFld, double fovInFld, bool display) {
     
@@ -100,7 +199,7 @@ void arrayGeom::set_geometry(double flD, double samplesPerFld, double fovInFld, 
         draw();
     }
 }
-
+*/
 void arrayGeom::set_mesh(void) {
     
     // matlab: [plane.xx plane.yy] = meshgrid(plane.x, plane.y);
@@ -125,6 +224,7 @@ void arrayGeom::print(const char *hdr) {
     std::cout << "N elements Y = " << pixelY.n_elem << std::endl;
     for (int i=0; i<5; i++)
         printf("pixel %d: X = %0.23f, Y = %0.23f\n", i, pixelX[i], pixelY[i]);
+    printf("...\n");
     for (int i=pixelX.n_elem - 5; i<pixelX.n_elem; i++)
         printf("pixel %d: X = %0.23f, Y = %0.23f\n", i, pixelX[i], pixelY[i]);
 }

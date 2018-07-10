@@ -90,7 +90,6 @@ int main(int argn, char **argv) {
             globalCoronagraph->execute(initialEfield, 0, showTimes);
             std::cout << "csim execution time: " << timer.toc() << " seconds" << std::endl;
         }
-        std::cout << "finished this block" << std::endl;
     }
     if (computeFftWisdon)
         save_fft_wisdom();

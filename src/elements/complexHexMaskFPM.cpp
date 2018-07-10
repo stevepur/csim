@@ -141,6 +141,16 @@ void complexHexMaskFPM::set(std::string fieldName, const char *arg) {
     } else if (fieldName == "fpmRadius") {
         // arg is a single double
         fpmRadius = atof(arg);
+    } else if (fieldName == "fpmMaskSize") {
+        // arg is a single int
+        fpmMaskSize = atoi(arg);
+    } else if (fieldName == "fpmMaskPhysicalSize") {
+        // arg is a single double
+        fpmMaskPhysicalSize = atof(arg);
+    } else if (fieldName == "pixelScale") {
+        // arg is a single double
+        pixelScale = atof(arg);
+        std::cout << pixelScale << " = " << arg << std::endl;
     } else if (fieldName == "sagFilename") {
         // arg is one filename
         load_sags(arg);
@@ -179,10 +189,20 @@ void complexHexMaskFPM::set_optimization_data(const char *dataName, void *data) 
 
 void complexHexMaskFPM::init_mask(void) {
     int fileStatus = 0;
+    assert(fpmMaskSize > -1);
     
-    std::string s1 = maskFilenameRoot+"_nSubPix.fits";
+    if (pixelScale == -1) {
+        if (fpmMaskPhysicalSize > -1) {
+            pixelScale = fpmMaskPhysicalSize/fpmMaskSize;
+        } else if (zoomFactor > -1 & lambdaRef > -1 & fpmFRatio > -1) {
+            pixelScale = 2*(initialEfield->beamRadiusPhysical/(initialEfield->pixelScale*fpmMaskSize*zoomFactor))*lambdaRef*fpmFRatio;
+        }
+    }
+    assert(pixelScale > -1);
+
+    std::string s1 = maskFilenameRoot+"_"+std::to_string(fpmMaskSize)+"_nSubPix.fits";
     fileStatus += load_cube(s1.c_str(), interpNSubPix);
-    std::string s2 = maskFilenameRoot+"_hexNum.fits";
+    std::string s2 = maskFilenameRoot+"_"+std::to_string(fpmMaskSize)+"_hexNum.fits";
     fileStatus += load_cube(s2.c_str(), interpHexNum);
     
     if (fileStatus) {
@@ -198,8 +218,9 @@ void complexHexMaskFPM::init_mask(void) {
         save_cube(s1.c_str(), interpNSubPix);
         save_cube(s2.c_str(), interpHexNum);
     } else {
-        fpmScale = compute_fpmScale(interpNSubPix.n_rows);
-        std::cout << "fpmScale = " << fpmScale << std::endl;
+//        pixelScale = compute_fpmScale(interpNSubPix.n_rows);
+        std::cout << "pixelScale = " << pixelScale << std::endl;
+        printf("pixelScale = %0.18e\n", pixelScale);
         interpSagVals = arma::zeros<arma::cube>(interpNSubPix.n_rows, interpNSubPix.n_cols, interpNSubPix.n_slices);
         if (fpmSags.n_elem == 0)
             fpmSags = arma::zeros<arma::vec>(max(max(interpHexNum.slice(0)))+1);
@@ -305,27 +326,31 @@ void complexHexMaskFPM::make_hex_array(void) {
     
     fpmDesignArray = -1.0*arma::ones<arma::mat>(fpmArraySize, fpmArraySize);
     fpmDesignSagArray = arma::zeros<arma::mat>(fpmArraySize, fpmArraySize);
-    for (int h=0; h<hexNum.n_elem; h++) {
-        for (int ii=0; ii<fpmArraySize; ii++) {
-            for (int jj=0; jj<fpmArraySize; jj++) {
-                double dx = (double)jj - hexXFpmIndexCoords(h);
-                double dy = (double)ii - hexYFpmIndexCoords(h);
-                double r2 = dx*dx + dy*dy;
-                if (r2 > closeHexSq)
-                    continue;
-                
-                // compare the vector dv=(dx, dy) from this point to the
-                // vp and vm by taking the absolute magnitude of the dot
-                // products dv.vp and dv.vm
-                // demand that abs(dv.vp) and abs(dv.vm) < hexRadius
-                // and dy < hexRadius
-                double dpx = dx*vx;  // help out the compiler optimizer
-                double dpy = dy*vy;
-                if (fabs(dy) < hexRadius
-                    & fabs(dpx + dpy) < hexRadius
-                    & fabs(dpx - dpy) < hexRadius) {
-                    fpmDesignArray(ii, jj) = (double) hexNum(h);
-                    fpmDesignSagArray(ii, jj) = fpmSags(h);
+#pragma omp parallel
+    {
+#pragma omp for
+        for (int h=0; h<hexNum.n_elem; h++) {
+            for (int ii=0; ii<fpmArraySize; ii++) {
+                for (int jj=0; jj<fpmArraySize; jj++) {
+                    double dx = (double)jj - hexXFpmIndexCoords(h);
+                    double dy = (double)ii - hexYFpmIndexCoords(h);
+                    double r2 = dx*dx + dy*dy;
+                    if (r2 > closeHexSq)
+                        continue;
+                    
+                    // compare the vector dv=(dx, dy) from this point to the
+                    // vp and vm by taking the absolute magnitude of the dot
+                    // products dv.vp and dv.vm
+                    // demand that abs(dv.vp) and abs(dv.vm) < hexRadius
+                    // and dy < hexRadius
+                    double dpx = dx*vx;  // help out the compiler optimizer
+                    double dpy = dy*vy;
+                    if (fabs(dy) < hexRadius
+                        & fabs(dpx + dpy) < hexRadius
+                        & fabs(dpx - dpy) < hexRadius) {
+                        fpmDesignArray(ii, jj) = (double) hexNum(h);
+                        fpmDesignSagArray(ii, jj) = fpmSags(h);
+                    }
                 }
             }
         }
@@ -337,92 +362,97 @@ void complexHexMaskFPM::make_hex_array(void) {
     fclose(outFile);
 }
 
-double complexHexMaskFPM::compute_fpmScale(int fpmSize) {
-    return 2*(initialEfield->beamRadiusPhysical/(initialEfield->pixelScale*fpmSize*zoomFactor))*lambdaRef*fpmFRatio;
+double complexHexMaskFPM::compute_fpmScale(int fpmMaskSize) {
+    return 2*(initialEfield->beamRadiusPhysical/(initialEfield->pixelScale*fpmMaskSize*zoomFactor))*lambdaRef*fpmFRatio;
 }
 
 void complexHexMaskFPM::make_interpolation_data(void) {
-    int fpmSize = initialEfield->E[0][0]->n_rows;
-    arma::ivec hexList;
     
     // compute the pixel scale for the fpm array
-    fpmScale = compute_fpmScale(fpmSize);
-    std::cout << "fpmScale = " << fpmScale << std::endl;
+//    pixelScale = compute_fpmScale(fpmMaskSize);
+    std::cout << "pixelScale = " << pixelScale << std::endl;
     
     // precompute some things to help out the compiler optimizer
-    double ac1 = -fpmSize/2.0 - 0.5;
+    double ac1 = -fpmMaskSize/2.0 - 0.5;
     double xc1 = (0.5/fpmRadius)*fpmScaleFactor;
     
-    interpNSubPix = arma::zeros<arma::cube>(fpmSize, fpmSize, 3);
-    interpSagVals = arma::zeros<arma::cube>(fpmSize, fpmSize, 3);
-//    interpHexNum.set_size(fpmSize, fpmSize, 3);
-    interpHexNum =  -1.0*arma::ones<arma::cube>(fpmSize, fpmSize, 3);
+    interpNSubPix = arma::zeros<arma::cube>(fpmMaskSize, fpmMaskSize, 3);
+    interpSagVals = arma::zeros<arma::cube>(fpmMaskSize, fpmMaskSize, 3);
+//    interpHexNum.set_size(fpmMaskSize, fpmMaskSize, 3);
+    interpHexNum =  -1.0*arma::ones<arma::cube>(fpmMaskSize, fpmMaskSize, 3);
     
-    hexList.set_size(3);
-    for (int i=0; i<fpmSize; i++) {
+    for (int i=0; i<fpmMaskSize; i++) {
         std::cout << i << " ";
         fflush(stdout);
-        // check midpoint of the cell to find if it's on the design array
-        int iii = (int) (nSubPix/2.0);
-        // compute the physical coordinate of the point
-        double x = (i + ac1 + (0.5 + iii)/((double) nSubPix)) * fpmScale;
-        // compute the index of this physical point on the design array
-        int ii1 = (int)((0.5 + x*xc1)*fpmArraySize + 0.5);
         
-        for (int j=0; j<fpmSize; j++) {
+#pragma omp parallel
+        {
+
+            arma::ivec hexList;
+            hexList.set_size(3);
             // check midpoint of the cell to find if it's on the design array
-            int jjj = (int) (nSubPix/2.0);
+            int iii = (int) (nSubPix/2.0);
             // compute the physical coordinate of the point
-            double y = (j + ac1 + (0.5 + jjj)/((double) nSubPix)) * fpmScale;
+            double x = (i + ac1 + (0.5 + iii)/((double) nSubPix)) * pixelScale;
             // compute the index of this physical point on the design array
-            int jj1 = (int)((0.5 + y*xc1)*fpmArraySize + 0.5);
+            int ii1 = (int)((0.5 + x*xc1)*fpmArraySize + 0.5);
             
-            if (ii1 < 0 | ii1 >= fpmArraySize | jj1 < 0 | jj1 >= fpmArraySize)
-                continue;
-            
-            // now collect sub-sample data
-            hexList.reset();
-            for (int iii = 0; iii < nSubPix; iii++) {
-                for (int jjj = 0; jjj < nSubPix; jjj++) {
-                    // physical coordinates of this subpixel
-                    x = (i + ac1 + (0.5 + iii)/((double) nSubPix)) * fpmScale;
-                    y = (j + ac1 + (0.5 + jjj)/((double) nSubPix)) * fpmScale;
-                    // coordinates of this subpixel on the design array
-                    ii1 = (int)((0.5 + x*xc1)*fpmArraySize + 0.5);
-                    jj1 = (int)((0.5 + y*xc1)*fpmArraySize + 0.5);
-                    if (ii1 < 0 | ii1 >= fpmArraySize | jj1 < 0 | jj1 >= fpmArraySize) {
-                        interpNSubPix(i,j,0)++;
-                        continue;
-                    }
-                    
-                    // get the hexnum for this subcell
-                    int inHexNum = (int) fpmDesignArray(ii1, jj1);
-                    if (inHexNum < 0) {
-                        interpNSubPix(i,j,0)++;
-                        continue;
-                    }
-                    // is this hexNum in this cell's hexList?
-                    arma::uvec hlii = find(hexList == inHexNum);
-                    if (hlii.is_empty()) {
-                        // no, so add it to the list of hex numbers in this cell
-                        int curSize = hexList.n_elem;
-                        hexList.resize(curSize + 1);
-                        hexList(curSize) = inHexNum;
-                        assert(hexList.n_elem <= 3);
-                    }
-                    
-                    // now find the slot with this hexNum
-                    arma::uvec hexListIdx = find(hexList == inHexNum);
-                    assert(hexListIdx.n_elem == 1);
-                    // and set the interpolatin data for this cell
-                    if (!hexListIdx.is_empty()) {
-                        interpNSubPix(i,j,hexListIdx(0))++;
-//                        interpSagVals(i,j,hexListIdx(0)) = fpmSags(inHexNum);
-                        interpHexNum(i,j,hexListIdx(0)) = (double) inHexNum;
-                    }
-                } // jjj loop
-            } // iii loop
-        } // j loop
+#pragma omp for
+            for (int j=0; j<fpmMaskSize; j++) {
+                // check midpoint of the cell to find if it's on the design array
+                int jjj = (int) (nSubPix/2.0);
+                // compute the physical coordinate of the point
+                double y = (j + ac1 + (0.5 + jjj)/((double) nSubPix)) * pixelScale;
+                // compute the index of this physical point on the design array
+                int jj1 = (int)((0.5 + y*xc1)*fpmArraySize + 0.5);
+                
+                if (ii1 < 0 | ii1 >= fpmArraySize | jj1 < 0 | jj1 >= fpmArraySize)
+                    continue;
+                
+                // now collect sub-sample data
+                hexList.reset();
+                for (int iii = 0; iii < nSubPix; iii++) {
+                    for (int jjj = 0; jjj < nSubPix; jjj++) {
+                        // physical coordinates of this subpixel
+                        x = (i + ac1 + (0.5 + iii)/((double) nSubPix)) * pixelScale;
+                        y = (j + ac1 + (0.5 + jjj)/((double) nSubPix)) * pixelScale;
+                        // coordinates of this subpixel on the design array
+                        ii1 = (int)((0.5 + x*xc1)*fpmArraySize + 0.5);
+                        jj1 = (int)((0.5 + y*xc1)*fpmArraySize + 0.5);
+                        if (ii1 < 0 | ii1 >= fpmArraySize | jj1 < 0 | jj1 >= fpmArraySize) {
+                            interpNSubPix(i,j,0)++;
+                            continue;
+                        }
+                        
+                        // get the hexnum for this subcell
+                        int inHexNum = (int) fpmDesignArray(ii1, jj1);
+                        if (inHexNum < 0) {
+                            interpNSubPix(i,j,0)++;
+                            continue;
+                        }
+                        // is this hexNum in this cell's hexList?
+                        arma::uvec hlii = find(hexList == inHexNum);
+                        if (hlii.is_empty()) {
+                            // no, so add it to the list of hex numbers in this cell
+                            int curSize = hexList.n_elem;
+                            hexList.resize(curSize + 1);
+                            hexList(curSize) = inHexNum;
+                            assert(hexList.n_elem <= 3);
+                        }
+                        
+                        // now find the slot with this hexNum
+                        arma::uvec hexListIdx = find(hexList == inHexNum);
+                        assert(hexListIdx.n_elem == 1);
+                        // and set the interpolatin data for this cell
+                        if (!hexListIdx.is_empty()) {
+                            interpNSubPix(i,j,hexListIdx(0))++;
+    //                        interpSagVals(i,j,hexListIdx(0)) = fpmSags(inHexNum);
+                            interpHexNum(i,j,hexListIdx(0)) = (double) inHexNum;
+                        }
+                    } // jjj loop
+                } // iii loop
+            } // j loop
+        } // pragma omp parallel
     } // i loop
     std::cout << std::endl;
     

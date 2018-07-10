@@ -25,7 +25,9 @@ class complexHexMaskFPM : public celem {
     int nSubPix = -1;
     double fpmRadius = -1;
     
-    double fpmScale = -1;
+    double pixelScale = -1;
+    int fpmMaskSize = -1;
+    double fpmMaskPhysicalSize = -1;
     double zoomFactor = 1.0;
     double phaseSign = 1.0;
     
@@ -68,7 +70,7 @@ public:
     void make_hex_array(void);
     void make_interpolation_data(void);
     
-    double get_fpmScale(void) { return fpmScale; }
+    double get_fpmScale(void) { return pixelScale; }
     void set_zoomFactor(double z) {  zoomFactor = z; }
     
     void print(const char *hdr = "");

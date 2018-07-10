@@ -20,6 +20,9 @@ public:
     // physical pixel size
     double pixelSizeX = 0;  // (.dx in matlab code)
     double pixelSizeY = 0;  // (.dy in matlab code)
+    // physical array origin
+    double originX = 0;
+    double originY = 0;
     // physical pixel locations
     arma::vec pixelX;  // (.x in matlab code)
     arma::vec pixelY;  // (.y in matlab code)
@@ -31,9 +34,32 @@ public:
 
     
     arrayGeom() {}
-    void set_geometry(int nRows, int nCols, double physicalRadius, bool display = false);
-    void set_xy(int nRows, int nCols, double physicalRadius, bool display = false);
-    void set_xy_m1(int nRows, int nCols, double physicalRadius, bool display = false);
+    void set_geometry(arma::cx_cube *E, double pixelScale, double origin = 0.0, bool display = false);
+    void set_geometry(arma::cx_mat *E, double pixelScale, double origin = 0.0, bool display = false);
+    void set_geometry(arma::cube *E, double pixelScale, double origin = 0.0, bool display = false);
+    void set_geometry(arma::mat *E, double pixelScale, double origin = 0.0, bool display = false);
+    void set_xy(arma::cx_cube *E, double pixelScale, double origin = 0.0, bool display = false);
+    void set_xy(arma::cx_mat *E, double pixelScale, double origin = 0.0, bool display = false);
+    void set_xy(arma::cube *E, double pixelScale, double origin = 0.0, bool display = false);
+    void set_xy(arma::mat *E, double pixelScale, double origin = 0.0, bool display = false);
+    
+    void set_geometry(arma::cx_cube& E, double pixelScale, double origin = 0.0, bool display = false);
+    void set_geometry(arma::cx_mat& E, double pixelScale, double origin = 0.0, bool display = false);
+    void set_geometry(arma::cube& E, double pixelScale, double origin = 0.0, bool display = false);
+    void set_geometry(arma::mat& E, double pixelScale, double origin = 0.0, bool display = false);
+    void set_xy(arma::cx_cube& E, double pixelScale, double origin = 0.0, bool display = false);
+    void set_xy(arma::cx_mat& E, double pixelScale, double origin = 0.0, bool display = false);
+    void set_xy(arma::cube& E, double pixelScale, double origin = 0.0, bool display = false);
+    void set_xy(arma::mat& E, double pixelScale, double origin = 0.0, bool display = false);
+    
+    void set_geometry(int N, double pSize, double origin = 0.0, bool display = false);
+    void set_geometry(int nX, int nY, double pSize, double origin = 0.0, bool display = false);
+    void set_geometry(int nX, int nY, double pSizeX, double pSizeY, double oX = 0.0, double oY = 0.0, bool display = false);
+    void set_xy(int N, double pSize, double origin = 0.0, bool display = false);
+    void set_xy(int nX, int nY, double pSize, double origin = 0.0, bool display = false);
+    void set_xy(int nX, int nY, double pSizeX, double pSizeY, double oX = 0.0, double oY = 0.0, bool display = false);
+    void set_xy_offset_m1(int nX, int nY, double pixelScale, bool display = false);
+    
     void set_geometry(double referenceLambda, double samplesPerFld, double fovInFld, bool display = false);
     void set_mesh(void);
     void print(const char *hdr = "");

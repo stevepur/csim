@@ -30,6 +30,10 @@ class fft {
     fftPlanData fftPlan;
 public:
     fft() {};
+    void init(arma::cx_cube& in, int length = 0);
+    void init(arma::cx_mat& in, int length = 0);
+    void init(arma::cx_mat& in, arma::cx_mat& out, int length = 0);
+    void init(arma::cx_vec& in, arma::cx_vec& out, int length = 0);
     void execute(arma::cx_cube& in, int length = 0);
     void execute(arma::cx_mat& in, int length = 0);
     void execute(arma::cx_mat& in, arma::cx_mat& out, int length = 0);
@@ -40,6 +44,10 @@ class ifft {
     fftPlanData fftPlan;
 public:
     ifft() {};
+    void init(arma::cx_cube& in, int length = 0);
+    void init(arma::cx_mat& in, int length = 0);
+    void init(arma::cx_mat& in, arma::cx_mat& out, int length = 0);
+    void init(arma::cx_vec& in, arma::cx_vec& out, int length = 0);
     void execute(arma::cx_cube& in, int length = 0);
     void execute(arma::cx_mat& in, int length = 0);
     void execute(arma::cx_mat& in, arma::cx_mat& out, int length = 0);

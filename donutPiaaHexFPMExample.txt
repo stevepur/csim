@@ -13,15 +13,16 @@ start
 	setSize:1024, 1024, 1
 	pointSource:1.0, 0.0, 0.0
 #	pointSource:1e-8, 3, 0.0
-# three sources making a triangle of radius 0.006 l/D
-#	pointSource:0.33333333333, 0.006, 0.0
-#	pointSource:0.33333333333, -0.003, 5.19615242270700e-003
-#	pointSource:0.33333333333, -0.003, 5.19615242270700e-003
+# three sources making a triangle of radius 0.004 l/D
+#	pointSource:0.33333333333, 0.004, 0.0
+#	pointSource:0.33333333333, -0.002, 0.003464101615138
+#	pointSource:0.33333333333, -0.002, 0.003464101615138
 	wavelength:650e-9
 #	wavelengthBandwidth: 650e-9, 0.1, 5
 #	wavelengthBandwidth: 650e-9, 0.1, 20
 	beamRadiusPhysical:0.018
-	pixelScale:3.8671875E-05
+	# pixelScale:3.8671875E-05
+	pixelScale:0.0000386680988184747549078
 end
 # ------------------------
 # the coronagraph
@@ -59,12 +60,16 @@ start
 				fpmArraySize: 2048
 				fpmScaleFactor: 0.9
 				hexGap: -0.0001
-				lambdaRef: 650e-9
-				fpmFRatio: 85.9
+				# lambdaRef: 650e-9
+				# fpmFRatio: 85.9
+				fpmMaskPhysicalSize: 0.0003908831684570694383132
+				# pixelScale: 3.817218441963568734e-7
 				nSubPix: 64
 				fpmRadius: 1.85e-04
+				fpmMaskSize: 1024
 				maskFilenameRoot:donutPiaaFullCircleExample/mask_data
-				sagFilename:donutPiaaFullCircleExample/mono_2_6/optTest1/bestOptVector.fits
+				#sagFilename:donutPiaaFullCircleExample/mono_2_6/optTest1/bestOptVector.fits
+				sagFilename:donutPiaaFullCircle/3source_2_6/optTest/bestSags_full_circle_r2_8_8.47691e-10.fits
 			end
 		end
 	end

@@ -17,7 +17,7 @@ tools/libtools.la \
 
 csim_CPPFLAGS = \
 -I/Users/steve/programming_projects/gnu/cfitsio/include \
--I/Users/steve/programming_projects/gnu/armadillo-7.800.1/include \
+-I/Users/steve/programming_projects/gnu/armadillo-8.500.1/include \
 -I/Users/steve/programming_projects/gnu/fftw-3.3.7/include \
 -Ilib \
 -Icoronagraph \
@@ -38,11 +38,11 @@ tools/libtools.la \
 /Users/steve/programming_projects/gnu/fftw-3.3.7/libfftw3.la \
 /Users/steve/programming_projects/gnu/fftw-3.3.7/threads/libfftw3_omp.la \
 /Users/steve/programming_projects/gnu/cfitsio/libcfitsio.a \
--L/Developer/NVIDIA/CUDA-8.0/lib -lnvblas -lblas -llapack
+-L/Developer/NVIDIA/CUDA-9.2/lib -lnvblas -lblas -llapack
 
 csim_gpu_CPPFLAGS = \
 -I/Users/steve/programming_projects/gnu/cfitsio/include \
--I/Users/steve/programming_projects/gnu/armadillo-7.800.1/include \
+-I/Users/steve/programming_projects/gnu/armadillo-8.500.1/include \
 -I/Users/steve/programming_projects/gnu/fftw-3.3.7/include \
 -Ilib \
 -Icoronagraph \
@@ -67,7 +67,7 @@ tools/libtools.la \
 
 test_CPPFLAGS = \
 -I/Users/steve/programming_projects/gnu/cfitsio/include \
--I/Users/steve/programming_projects/gnu/armadillo-7.800.1/include \
+-I/Users/steve/programming_projects/gnu/armadillo-8.500.1/include \
 -I/Users/steve/programming_projects/gnu/fftw-3.3.7/include \
 -Ilib \
 -Icoronagraph \

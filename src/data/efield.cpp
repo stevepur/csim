@@ -395,7 +395,7 @@ void efield::set_array_geometry(void) {
     std::cout << arrayRadiusPhysical << E[0][0]->n_rows << E[0][0]->n_cols << std::endl;
     assert(arrayRadiusPhysical != 0 & E[0][0]->n_rows != 0 & E[0][0]->n_cols != 0);
     
-    arrayGeometry.set_geometry((int) E[0][0]->n_rows, (int) E[0][0]->n_cols, arrayRadiusPhysical);
+    arrayGeometry.set_geometry(E[0][0], pixelScale);
     arrayGeometry.print("Efield");
 }
 

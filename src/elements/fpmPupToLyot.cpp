@@ -22,7 +22,10 @@ fpmPupToLyot::fpmPupToLyot(initCommandSet*& cmdBlock) {
 }
 
 efield* fpmPupToLyot::execute(efield* E, celem* prev, celem* next, double time) {
-//    std::cout << "executing a fpmPupToLyot " << name << std::endl;
+    static int p2lCount = 0;
+    
+    assert(E->beamRadiusPhysical > 0);
+
     std::complex<double> i1(0, 1);
     std::complex<double> r1(1, 0);
     int nRowsE = E->E[0][0]->n_rows;
@@ -30,58 +33,76 @@ efield* fpmPupToLyot::execute(efield* E, celem* prev, celem* next, double time) 
 
     pre_execute(E, prev, next, time);
     
-    assert(E->beamRadiusPhysical > 0);
-    
-    // create space for a zero-padded E array, with a 2x padding
-    paddedE = arma::zeros<arma::cx_mat>(2*nRowsE, 2*nColsE);
-    paddedGeom.set_xy(paddedE.n_rows, paddedE.n_cols, E->arrayGeometry.physicalSize); // last arg is radius, so we divide by two but we're doubling
-    fftMHatTimesfftPaddedE = arma::zeros<arma::cx_mat>(size(paddedE));
-    double *lambda = new double[E->E[0][0]->n_slices];
-    double *lambdaFocalLength = new double[E->E[0][0]->n_slices];
-    mask->set_geometry(this, E, lambda, lambdaFocalLength);
-    propZoomFft.init(maskGeom, paddedGeom, lambdaFocalLength, E->E[0][0]->n_slices);
-//    maskGeom.print("maskGeom");
+    omp_set_nested(1);
+    if (!maskIsInited) {
+        std::cout << "------------- initing fpmPupToLyot ---------------" << std::endl;
+        double *lambda = new double[E->E[0][0]->n_slices];
+        lambdaFocalLength = new double[E->E[0][0]->n_slices];
+        // create space for a zero-padded E array, with a 2x padding
+        paddedE = arma::zeros<arma::cx_cube>(2*nRowsE, 2*nColsE, E->E[0][0]->n_slices);
+        for (int sl=0; sl<E->E[0][0]->n_slices; sl++) {
+            paddedGeom.set_xy(paddedE.slice(sl), E->arrayGeometry.pixelSizeX);
+        }
+        mask->set_geometry(this, E, lambda, lambdaFocalLength);
+        fpmMatAmpCalib = arma::zeros<arma::cx_cube>(nRowsE, nColsE, E->E[0][0]->n_slices);
+        fpmMatAmp = arma::zeros<arma::cx_cube>(nRowsE, nColsE, E->E[0][0]->n_slices);
+        fftMaskHatCalib = arma::zeros<arma::cx_cube>(2*nRowsE, 2*nColsE, E->E[0][0]->n_slices);
+        fftMaskHat = arma::zeros<arma::cx_cube>(2*nRowsE, 2*nColsE, E->E[0][0]->n_slices);
+
+        propZoomFft = new zoomFft[omp_get_max_threads()];
+        paddedEFft = new fft[omp_get_max_threads()];
+        myIfft = new ifft[omp_get_max_threads()];
+        for (int t=0; t<omp_get_max_threads(); t++) {
+            paddedEFft[t].init(paddedE.slice(0));
+            myIfft[t].init(paddedE.slice(0));
+        }
+        
+        #pragma omp parallel for
+        for (int sl=0; sl<E->E[0][0]->n_slices; sl++) {
+            arma::cx_mat maskHat;
+            fft maskFft;
+            
+            propZoomFft[omp_get_thread_num()].init(maskGeom, paddedGeom, lambdaFocalLength, E->E[0][0]->n_slices);
+
+            mask->set_fpmMatAmp(this, lambda[sl], sl);
+            // matlab: mask.M_hat = zoomFFT_realunits(mask.x, mask.y, mask.M - 1, pupil_ext.x, pupil_ext.y, pupil.f, lambda);
+            // matlab: FFT_M_hat = fft2((fftshift(mask.M_hat)));
+            maskHat = zoomFftSign*propZoomFft[omp_get_thread_num()].execute(fpmMatAmpCalib.slice(sl), sl);
+            fftMaskHatCalib.slice(sl) = fft_shift(maskHat);
+            maskFft.execute(fftMaskHatCalib.slice(sl));
+        
+            maskHat = zoomFftSign*propZoomFft[omp_get_thread_num()].execute(fpmMatAmp.slice(sl), sl);
+            fftMaskHat.slice(sl) = fft_shift(maskHat);
+            maskFft.execute(fftMaskHat.slice(sl));
+        }
+        maskIsInited = true;
+    }
+
+    #pragma omp parallel for
     for (int sl=0; sl<E->E[0][0]->n_slices; sl++) {
-//        std::cout << "fpmPupToLyot::execute slice " << sl << ", lambda = " << lambda[sl] << std::endl;
-        
-//        std::cout << "lambda = " << lambda[sl] << ", lambdaFocalLength = " << lambdaFocalLength[sl] << std::endl;
-//        std::cout << "calibrating: " << globalCoronagraph->get_calibration_state() << ", disableForCalibration: " << disableForCalibration << std::endl;
-        mask->set_fpmMatAmp(this, lambda[sl], sl);
-//        std::cout << "finished set_fpmMatAmp" << std::endl;
-        // matlab: mask.M_hat = zoomFFT_realunits(mask.x, mask.y, mask.M - 1, pupil_ext.x, pupil_ext.y, pupil.f, lambda);
-//        if (sl == E->E[0][0]->n_slices-1)
-//            save_mat("fpmMatAmp.fits", fpmMatAmp, "reIm");
-        maskHat = zoomFftSign*propZoomFft.execute(fpmMatAmp, sl);
-//        if (sl == E->E[0][0]->n_slices-1)
-//            save_mat("maskHat.fits", maskHat, "reIm");
-        
-        // matlab: FFT_M_hat = fft2((fftshift(mask.M_hat)));
-        fftMaskHat = fft_shift(maskHat);
-        maskFft.execute(fftMaskHat);
-//        if (sl == E->E[0][0]->n_slices-1)
-//            save_mat("fftMaskHat.fits", fftMaskHat, "reIm");
+        arma::cx_mat fftPaddedE= arma::zeros<arma::cx_mat>(2*nRowsE, 2*nColsE);
+        arma::cx_mat fftMHatTimesfftPaddedE = arma::zeros<arma::cx_mat>(size(paddedE.slice(sl)));
+
         for (int s=0; s<E->E.size(); s++) {
             for (int p=0; p<E->E[s].size(); p++) {
                 // embed E in the zero-padded cube
-                paddedE(arma::span(nRowsE/2, 3*nRowsE/2-1), arma::span(nColsE/2, 3*nColsE/2-1)) = E->E[s][p]->slice(sl);
+                paddedE(arma::span(nRowsE/2, 3*nRowsE/2-1), arma::span(nColsE/2, 3*nColsE/2-1), arma::span(sl, sl)) = E->E[s][p]->slice(sl);
                 
                 // matlab: FFT_pupil = fft2(pupil_ext.E);
-                fftPaddedE = paddedE;
-                paddedEFft.execute(fftPaddedE);
-//                if (sl == E->E[0][0]->n_slices-1)
-//                    save_mat("fftPaddedE.fits", fftPaddedE, "reIm");
+                fftPaddedE = paddedE.slice(sl);
+                paddedEFft[omp_get_thread_num()].execute(fftPaddedE);
 
                 // matlab: E = ifft2(FFT_M_hat.*FFT_pupil)/(-1i*lambda*pupil.f)*(pupil.x(2) - pupil.x(1))^2 + pupil_ext.E;
-                fftMHatTimesfftPaddedE = fftMaskHat%fftPaddedE;
-                myIfft.execute(fftMHatTimesfftPaddedE);
-//                if (sl == E->E[0][0]->n_slices-1)
-//                    save_mat("fftMHatTimesfftPaddedE.fits", fftMHatTimesfftPaddedE, "reIm");
+                if (globalCoronagraph->get_calibration_state() & disableForCalibration)
+                    fftMHatTimesfftPaddedE = fftMaskHatCalib.slice(sl)%fftPaddedE;
+                else
+                    fftMHatTimesfftPaddedE = fftMaskHat.slice(sl)%fftPaddedE;
+                myIfft[omp_get_thread_num()].execute(fftMHatTimesfftPaddedE);
+
                 fftMHatTimesfftPaddedE = fftMHatTimesfftPaddedE*pow(paddedGeom.pixelSizeX, 2)/(-i1*fRatioSign*lambdaFocalLength[sl]);
-//                if (sl == E->E[0][0]->n_slices-1)
-//                    save_mat("fftMHatTimesfftPaddedE_mult.fits", fftMHatTimesfftPaddedE, "reIm");
-                mask->apply_babinet(this);
-//                if (sl == E->E[0][0]->n_slices-1)
-//                    save_mat("fftMHatTimesfftPaddedE_bab.fits", fftMHatTimesfftPaddedE, "reIm");
+
+                if (mask->doBabinet)
+                    fftMHatTimesfftPaddedE += paddedE.slice(sl);
                 
                 // extract the central result for the final answer
                 E->E[s][p]->slice(sl) = fftMHatTimesfftPaddedE(arma::span(nRowsE/2, 3*nRowsE/2-1), arma::span(nColsE/2, 3*nColsE/2-1));
@@ -90,7 +111,8 @@ efield* fpmPupToLyot::execute(efield* E, celem* prev, celem* next, double time) 
     }
     post_execute(E, prev, next, time);
 //    E->print("exiting fpmPupToLyot::execute: ");
-
+    p2lCount++;
+    
     return E;
 }
 
@@ -256,8 +278,9 @@ void fpmCMCForPupToLyot::set_geometry(fpmPupToLyot *p2l, efield* E, double *lamb
     // mask.dxprime = 1.098e-06; (fpmMatScale)
     // mask.resample = mask.dx / mask.dxprime;
     // mask.x = mask.x / mask.resample;
-    p2l->maskGeom.set_xy_m1(complexMaskCube.n_rows, complexMaskCube.n_cols, (E->arrayGeometry.physicalSize/2.)/(E->arrayGeometry.pixelSizeX/fpmMatScale));
-    
+//    p2l->maskGeom.set_xy_m1(complexMaskCube.n_rows, complexMaskCube.n_cols, (E->arrayGeometry.physicalSize/2.)/(E->arrayGeometry.pixelSizeX/fpmMatScale));
+    p2l->maskGeom.set_xy(complexMaskCube, fpmMatScale);
+
     //    E->print("in set_geometry");
     double cFRatio = p2l->focalRatio*2*E->beamRadiusPhysical;
 //    std::cout << "cFRatio set to: " << cFRatio << std::endl;
@@ -276,20 +299,22 @@ void fpmCMCForPupToLyot::set_fpmMatAmp(fpmPupToLyot *p2l, double lambda, int sl)
     
     if (maskIndex == -1)
         maskIndex = sl;
-    if (globalCoronagraph->get_calibration_state() & p2l->disableForCalibration)
-        p2l->fpmMatAmp = exp(i1*arma::zeros<arma::mat>(size(complexMaskMatAmp.slice(0))));
-    else
-        p2l->fpmMatAmp = complexMaskCube.slice(maskIndex);
+//    if (globalCoronagraph->get_calibration_state() & p2l->disableForCalibration)
+        p2l->fpmMatAmpCalib.slice(sl) = exp(i1*arma::zeros<arma::mat>(size(complexMaskMatAmp.slice(0))));
+//    else
+        p2l->fpmMatAmp.slice(sl) = complexMaskCube.slice(maskIndex);
     
     // for the CMC we pass mask - 1 to zoomFFT
-    if (doBabinet)
-        p2l->fpmMatAmp -= 1;
+    if (doBabinet) {
+        p2l->fpmMatAmpCalib.slice(sl) -= 1;
+        p2l->fpmMatAmp.slice(sl) -= 1;
+    }
 }
 
-void fpmCMCForPupToLyot::apply_babinet(fpmPupToLyot *p2l){
-    if (doBabinet)
-        p2l->fftMHatTimesfftPaddedE += p2l->paddedE;
-}
+//void fpmCMCForPupToLyot::apply_babinet(fpmPupToLyot *p2l, int sl){
+//    if (doBabinet)
+//        p2l->fftMHatTimesfftPaddedE += p2l->paddedE.slice(sl);
+//}
 
 void fpmCMCForPupToLyot::draw(const char *title) {
     char str[200];
@@ -341,8 +366,9 @@ void fpmIntHexCMCForPupToLyot::set_geometry(fpmPupToLyot *p2l, efield* E, double
     // mask.dxprime = 1.098e-06; (fpmMatScale)
     // mask.resample = mask.dx / mask.dxprime;
     // mask.x = mask.x / mask.resample;
-    p2l->maskGeom.set_xy_m1(hexFPM->interpNSubPix.n_rows, hexFPM->interpNSubPix.n_cols, (E->arrayGeometry.physicalSize/2.)/(E->arrayGeometry.pixelSizeX/hexFPM->fpmScale));
-    
+//    p2l->maskGeom.set_xy_m1(hexFPM->interpNSubPix.n_rows, hexFPM->interpNSubPix.n_cols, (E->arrayGeometry.physicalSize/2.)/(E->arrayGeometry.pixelSizeX/hexFPM->pixelScale));
+    p2l->maskGeom.set_xy(hexFPM->interpNSubPix, hexFPM->pixelScale);
+//    p2l->maskGeom.print("FPM mask geometry");
     //    E->print("in set_geometry");
     double cFRatio = p2l->focalRatio*2*E->beamRadiusPhysical; // focal length at this point
 //    std::cout << "cFRatio set to: " << cFRatio << std::endl;
@@ -359,14 +385,16 @@ void fpmIntHexCMCForPupToLyot::set_geometry(fpmPupToLyot *p2l, efield* E, double
 void fpmIntHexCMCForPupToLyot::set_fpmMatAmp(fpmPupToLyot *p2l, double lambda, int sl) {
     std::complex<double> i1(0, 1);
     
-    if (globalCoronagraph->get_calibration_state() & p2l->disableForCalibration)
-        p2l->fpmMatAmp = exp(i1*arma::zeros<arma::mat>(size(hexFPM->interpNSubPix.slice(0))));
-    else
-        p2l->fpmMatAmp = hexFPM->make_complex_intpolated_mask(lambda, 0.0);
+//    if (globalCoronagraph->get_calibration_state() & p2l->disableForCalibration)
+        p2l->fpmMatAmpCalib.slice(sl) = exp(i1*arma::zeros<arma::mat>(size(hexFPM->interpNSubPix.slice(0))));
+//    else
+        p2l->fpmMatAmp.slice(sl) = hexFPM->make_complex_intpolated_mask(lambda, 0.0);
     
     // for the CMC we pass mask - 1 to zoomFFT
-    if (doBabinet)
-        p2l->fpmMatAmp -= 1;
+    if (doBabinet) {
+        p2l->fpmMatAmpCalib.slice(sl) -= 1;
+        p2l->fpmMatAmp.slice(sl) -= 1;
+    }
 }
 
 void fpmIntHexCMCForPupToLyot::get_optimization_data(const char *dataName, void *data) {
@@ -380,10 +408,10 @@ void fpmIntHexCMCForPupToLyot::set_optimization_data(const char *dataName, void 
         hexFPM->set_optimization_data(dataName, data);
 }
 
-void fpmIntHexCMCForPupToLyot::apply_babinet(fpmPupToLyot *p2l){
-    if (doBabinet)
-        p2l->fftMHatTimesfftPaddedE += p2l->paddedE;
-}
+//void fpmIntHexCMCForPupToLyot::apply_babinet(fpmPupToLyot *p2l, int sl){
+//    if (doBabinet)
+//        p2l->fftMHatTimesfftPaddedE += p2l->paddedE.slice(sl);
+//}
 
 void fpmIntHexCMCForPupToLyot::draw(const char *title) {
     char str[200];
@@ -448,7 +476,9 @@ void fpmBinaryForPupToLyot::set_geometry(fpmPupToLyot *p2l, efield* E, double *l
 //    double flD = globalTelescope->get("primaryfRatio")*referenceLambda;
     double flD = globalTelescope->compute_loD(referenceLambda);
     double fovFld = 2*outerRadiusFld;
-    p2l->maskGeom.set_xy_m1(fpmMat.n_rows, fpmMat.n_cols, outerRadiusFld*flD);
+//    p2l->maskGeom.set_xy_offset_m1(fpmMat.n_cols, fpmMat.n_rows, 2*outerRadiusFld*flD/fpmMat.n_rows);
+//    p2l->maskGeom.set_xy_m1(fpmMat.n_rows, fpmMat.n_cols, outerRadiusFld*flD);
+    p2l->maskGeom.set_xy(fpmMat, 2*outerRadiusFld*flD/fpmMat.n_rows);
     p2l->maskGeom.print("puplToLyot mask geometry");
     
     //    E->print("in set_geometry");
@@ -461,10 +491,10 @@ void fpmBinaryForPupToLyot::set_geometry(fpmPupToLyot *p2l, efield* E, double *l
 void fpmBinaryForPupToLyot::set_fpmMatAmp(fpmPupToLyot *p2l, double lambda, int sl) {
     std::complex<double> r1(1, 0);
     
-    if (globalCoronagraph->get_calibration_state() & p2l->disableForCalibration)
-        p2l->fpmMatAmp = r1*calibMat;
-    else
-        p2l->fpmMatAmp = r1*fpmMat;
+//    if (globalCoronagraph->get_calibration_state() & p2l->disableForCalibration)
+        p2l->fpmMatAmpCalib.slice(sl) = r1*calibMat;
+//    else
+        p2l->fpmMatAmp.slice(sl) = r1*fpmMat;
     
     // matlab: mask.M_hat = zoomFFT_realunits(mask.x, mask.y, mask.M, pupil_ext.x, pupil_ext.y, pupil.f, lambda);
 }
