@@ -27,7 +27,7 @@ csim_CPPFLAGS = \
 -Ioptimization/differentialEvolution \
 -Itools
 
-test_LDADD = ltools/libtools.la \
+test_LDADD = tools/libtools.la \
 optimization/liboptimization.la \
 coronagraph/libcoronagraph.la \
 elements/libelements.la \
