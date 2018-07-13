@@ -239,7 +239,7 @@ void differentialEvolutionOptimizer::optimize(void) {
     
     if (saveState) {
         char outStr[1000];
-        sprintf(outStr, "%s/initial_population.fits", outputDirectory, iteration);
+        sprintf(outStr, "%s/initial_population.fits", outputDirectory);
         save_mat(outStr, population);
     }
     timer.tic();

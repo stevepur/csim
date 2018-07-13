@@ -207,7 +207,7 @@ void fpmCMCForPupToLyot::set(fpmPupToLyot *p2l, std::string fieldName, const cha
     } else if (fieldName == "maskFilename") {
         // arg is two filenames separated by a comma, each giving
         // the .fits amplitude and phase filename that contains the complexMask definition
-        char *cPtr = strchr(arg, ',');
+        const char *cPtr = strchr(arg, ',');
         int strAmpLen = cPtr - arg;
         int strPhLen = strlen(arg) - strAmpLen + 1;
         std::cout << "strAmpLen " << strAmpLen << ", strPhLen " << strPhLen << std::endl;
@@ -223,7 +223,7 @@ void fpmCMCForPupToLyot::set(fpmPupToLyot *p2l, std::string fieldName, const cha
     } else if (fieldName == "maskFilenameReIm") {
         // arg is two filenames separated by a comma, each giving
         // the .fits amplitude and phase filename that contains the complexMask definition
-        char *cPtr = strchr(arg, ',');
+        const char *cPtr = strchr(arg, ',');
         int strReLen = cPtr - arg;
         int strImLen = strlen(arg) - strReLen + 1;
         std::cout << "strReLen " << strReLen << ", strImLen " << strImLen << std::endl;

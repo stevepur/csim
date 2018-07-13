@@ -54,7 +54,7 @@ void makeHexCFpmResponse::set(std::string fieldName, const char *arg) {
         // arg is two strings separated by a comma,
         // the first string is the name of the component to be optimized
         // the second string is the name of the data to be optimized
-        char *cPtr = strchr(arg, ',');
+        const char *cPtr = strchr(arg, ',');
         int componentNameLen = cPtr - arg;
         int dataNameLen = strlen(arg) - componentNameLen + 1;
         std::cout << "componentNameLen " << componentNameLen << ", dataNameLen " << dataNameLen << std::endl;

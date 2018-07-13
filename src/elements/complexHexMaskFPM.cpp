@@ -306,7 +306,7 @@ void complexHexMaskFPM::compute_hex_centers(void) {
     
     FILE *outFile = fopen("hex_positions.txt", "w");
     for (int i=0; i<hexNum.n_elem; i++)
-        fprintf(outFile, "%d %f %f %d\n", hexNum(i), hexX(i), hexY(i), hexRing(i));
+        fprintf(outFile, "%lld %f %f %lld\n", hexNum(i), hexX(i), hexY(i), hexRing(i));
     fclose(outFile);
     
 }
@@ -358,7 +358,7 @@ void complexHexMaskFPM::make_hex_array(void) {
     
     FILE *outFile = fopen("hex_positions_fpmIndex.txt", "w");
     for (int i=0; i<hexNum.n_elem; i++)
-        fprintf(outFile, "%d %f %f %d\n", hexNum(i), hexXFpmIndexCoords(i), hexYFpmIndexCoords(i), hexRing(i));
+        fprintf(outFile, "%lld %f %f %lld\n", hexNum(i), hexXFpmIndexCoords(i), hexYFpmIndexCoords(i), hexRing(i));
     fclose(outFile);
 }
 

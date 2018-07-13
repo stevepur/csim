@@ -176,7 +176,7 @@ void responseData::save(void) {
     
     std::string fname = (std::string)outputDirectory + "/responseParams.txt";
     FILE *fid = fopen(fname.c_str(), "w");
-    fprintf(fid, "nRows = %d, nCols = %d, nSlices = %d, nPolarizations = %d, nSources = %d\n",
+    fprintf(fid, "nRows = %lu, nCols = %lu, nSlices = %lu, nPolarizations = %lu, nSources = %lu\n",
             M[0][0]->n_rows, M[0][0]->n_cols, M[0][0]->n_slices, M[0].size(), M.size());
     fclose(fid);
     for (int s=0; s<M.size(); s++) {
@@ -197,7 +197,7 @@ void responseData::load(void) {
     
     std::string fname = (std::string)outputDirectory + "/responseParams.txt";
     FILE *fid = fopen(fname.c_str(), "r");
-    fscanf(fid, "nRows = %d, nCols = %d, nSlices = %d, nPolarizations = %d, nSources = %d\n",
+    int d = fscanf(fid, "nRows = %d, nCols = %d, nSlices = %d, nPolarizations = %d, nSources = %d\n",
             &nRows, &nColumns, &nSlices, &nPolarizations, &nSources);
     fclose(fid);
     
@@ -237,7 +237,7 @@ void responseData::read_problem_params(void) {
     FILE *fid = fopen(fname.c_str(), "r");
 
     double ci;
-    fscanf(fid, "calibMaxIntensity: %lf\n", &ci);
+    int d = fscanf(fid, "calibMaxIntensity: %lf\n", &ci);
     calibIntensity = ci;
     retVal = fscanf(fid, "wavelengths: %s", wavelengthStr);
 //    std::cout << "wavelengthStr: " << wavelengthStr << std::endl;

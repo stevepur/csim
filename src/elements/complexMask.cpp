@@ -86,7 +86,7 @@ void complexMask::set(std::string fieldName, const char *arg) {
     } else if (fieldName == "filename") {
         // arg is two filenames separated by a comma, each giving
         // the .fits amplitude and phase filename that contains the complexMask definition
-        char *cPtr = strchr(arg, ',');
+        const char *cPtr = strchr(arg, ',');
         int strAmpLen = cPtr - arg;
         int strPhLen = strlen(arg) - strAmpLen + 1;
         std::cout << "strAmpLen " << strAmpLen << ", strPhLen " << strPhLen << std::endl;
