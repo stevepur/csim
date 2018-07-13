@@ -3,5 +3,5 @@ libelements_la_SOURCES = breakExecution.cpp celem.cpp mask.cpp mirror.cpp mirror
     fresnelPropagator.cpp fraunhoferFocal.cpp doubleFraunhoferFPM.cpp fpmPupToLyot.cpp \
     zoomDftPropagator.cpp zoomFftPropagator.cpp complexMask.cpp complexHexMaskFPM.cpp \
     doubleFraunhoferInterpFPM.cpp
-libelements_la_CPPFLAGS = -I/Users/steve/programming_projects/gnu/armadillo-8.500.1/include \
--I/Users/steve/programming_projects/gnu/cfitsio/include
+libelements_la_CPPFLAGS = -I$(MY_LIBDIR)/armadillo-8.500.1/include \
+-I$(MY_LIBDIR)/cfitsio/include

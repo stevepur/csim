@@ -9,15 +9,15 @@ elements/libelements.la \
 telescope/libtelescope.la \
 data/libdata.la \
 lib/libcsim.la \
-/Users/steve/programming_projects/gnu/fftw-3.3.7/libfftw3.la \
-/Users/steve/programming_projects/gnu/fftw-3.3.7/threads/libfftw3_omp.la \
-/Users/steve/programming_projects/gnu/cfitsio/libcfitsio.a \
+$(MY_LIBDIR)/fftw-3.3.7/libfftw3.la \
+$(MY_LIBDIR)/fftw-3.3.7/threads/libfftw3_omp.la \
+$(MY_LIBDIR)/cfitsio/libcfitsio.a \
 -lblas -llapack
 
 csim_CPPFLAGS = \
--I/Users/steve/programming_projects/gnu/cfitsio/include \
--I/Users/steve/programming_projects/gnu/armadillo-7.800.1/include \
--I/Users/steve/programming_projects/gnu/fftw-3.3.7/include \
+-I$(MY_LIBDIR)/cfitsio/include \
+-I$(MY_LIBDIR)/armadillo-7.800.1/include \
+-I$(MY_LIBDIR)/fftw-3.3.7/include \
 -Ilib \
 -Icoronagraph \
 -Idata \
@@ -34,15 +34,15 @@ elements/libelements.la \
 telescope/libtelescope.la \
 data/libdata.la \
 lib/libcsim.la \
-/Users/steve/programming_projects/gnu/fftw-3.3.7/libfftw3.la \
-/Users/steve/programming_projects/gnu/fftw-3.3.7/threads/libfftw3_omp.la \
-/Users/steve/programming_projects/gnu/cfitsio/libcfitsio.a \
+$(MY_LIBDIR)/fftw-3.3.7/libfftw3.la \
+$(MY_LIBDIR)/fftw-3.3.7/threads/libfftw3_omp.la \
+$(MY_LIBDIR)/cfitsio/libcfitsio.a \
 -lblas -llapack
 
 test_CPPFLAGS = \
--I/Users/steve/programming_projects/gnu/cfitsio/include \
--I/Users/steve/programming_projects/gnu/armadillo-7.800.1/include \
--I/Users/steve/programming_projects/gnu/fftw-3.3.7/include \
+-I$(MY_LIBDIR)/cfitsio/include \
+-I$(MY_LIBDIR)/armadillo-7.800.1/include \
+-I$(MY_LIBDIR)/fftw-3.3.7/include \
 -Ilib \
 -Icoronagraph \
 -Idata \

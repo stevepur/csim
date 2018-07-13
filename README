@@ -32,6 +32,10 @@ If you have a gpu you need the NVidia CUDA library, version >= 8.0
 
 3) edit the paths in the following files to point to the appropiate places and versions of the libraries/headers:
 
+If cfitsio, fftw and armadillo are all under the same directory, then set the environment variable MY_LIBDIR to point at that directory.  For example:
+export MY_LIBDIR=/Users/steve/programming_projects/gnu
+
+If they are not all in the same directory, you must replace occurrences of $(MY_LIBDIR) with the appropriate locations in the following files for the libraries that are not under $MY_LIBDIR:
 src/Makefile.am (this is the big one)  Note that the entries in *_LDADD cannot have a space (including "\ ") in the pathename
 src/coronagraph/Makefile.am
 src/data/Makefile.am
@@ -40,8 +44,6 @@ src/lib/Makefile.am
 src/optimization/Makefile.am
 src/telescope/Makefile.am (actually currently no changes are needed here)
 src/tools/Makefile.am
-
-(someday I'll figure out how to make it so you only have to change a single file that sets these paths)
 
 4) configure and make
 

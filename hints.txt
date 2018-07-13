@@ -13,6 +13,7 @@ make
 
 
 # enable openmp  PREFERRED DEFAULT
+export MY_LIBDIR=/Users/steve/programming_projects/gnu
 autoreconf --install
 ./configure 'CXXFLAGS= -g -O2 -Wunknown-pragmas -fopenmp'
 make clean
