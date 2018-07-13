@@ -3,13 +3,13 @@ csim_SOURCES = csim.cpp
 csim_gpu_SOURCES = csim.cpp
 test_SOURCES = test.cpp
 
-csim_LDADD = lib/libcsim.la \
-coronagraph/libcoronagraph.la \
-data/libdata.la \
-elements/libelements.la \
+csim_LDADD = tools/libtools.la \
 optimization/liboptimization.la \
+coronagraph/libcoronagraph.la \
+elements/libelements.la \
 telescope/libtelescope.la \
-tools/libtools.la \
+data/libdata.la \
+lib/libcsim.la \
 /Users/steve/programming_projects/gnu/fftw-3.3.7/libfftw3.la \
 /Users/steve/programming_projects/gnu/fftw-3.3.7/threads/libfftw3_omp.la \
 /Users/steve/programming_projects/gnu/cfitsio/libcfitsio.a \
@@ -28,13 +28,13 @@ csim_CPPFLAGS = \
 -Ioptimization/differentialEvolution \
 -Itools
 
-csim_gpu_LDADD = lib/libcsim.la \
-coronagraph/libcoronagraph.la \
-data/libdata.la \
-elements/libelements.la \
+csim_gpu_LDADD = tools/libtools.la \
 optimization/liboptimization.la \
+coronagraph/libcoronagraph.la \
+elements/libelements.la \
 telescope/libtelescope.la \
-tools/libtools.la \
+data/libdata.la \
+lib/libcsim.la \
 /Users/steve/programming_projects/gnu/fftw-3.3.7/libfftw3.la \
 /Users/steve/programming_projects/gnu/fftw-3.3.7/threads/libfftw3_omp.la \
 /Users/steve/programming_projects/gnu/cfitsio/libcfitsio.a \
@@ -53,13 +53,13 @@ csim_gpu_CPPFLAGS = \
 -Ioptimization/differentialEvolution \
 -Itools
 
-test_LDADD = lib/libcsim.la \
-coronagraph/libcoronagraph.la \
-data/libdata.la \
-elements/libelements.la \
+test_LDADD = tools/libtools.la \
 optimization/liboptimization.la \
+coronagraph/libcoronagraph.la \
+elements/libelements.la \
 telescope/libtelescope.la \
-tools/libtools.la \
+data/libdata.la \
+lib/libcsim.la \
 /Users/steve/programming_projects/gnu/fftw-3.3.7/libfftw3.la \
 /Users/steve/programming_projects/gnu/fftw-3.3.7/threads/libfftw3_omp.la \
 /Users/steve/programming_projects/gnu/cfitsio/libcfitsio.a \
