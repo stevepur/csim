@@ -15,7 +15,7 @@ start
 	reinitStrategy:eitherOr
 	populationSize:300
 #	initPopulationMean:zero
-	initPopulationMean:donutPiaaFullCircle/3source_2_6/optTest1/bestOptVector.fits
+	initPopulationMean:donutPiaaFullCircleExample/3source_2_6/optTest1/bestOptVector.fits
 	initSpread:1.0
 	reinitCompression:100
 	reinitSpread:2e-10
