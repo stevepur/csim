@@ -14,6 +14,7 @@
 
 class mirror : public celem {
     arma::mat mirrorMat;
+    arma::cx_cube mirrorPhase;
     double mirrorSign = 1;
    
 public:
@@ -25,7 +26,8 @@ public:
     void init(const char *filename);
     
     void set(std::string fieldName, const char *arg);
-    
+    void set_mirrorPhase(void);
+
     efield* execute(efield* E, celem* prev, celem* next, double time);
     
     void draw(const char *title = "");

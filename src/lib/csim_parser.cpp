@@ -134,6 +134,9 @@ std::vector<initCommandSet*> initCommandSet::find_command_blocks(void) {
     initCommandSet *newBlock = NULL;
     initCommandSet *cmdBlock = NULL; // for commands not inside a block
     
+//    std::cout << ">>>>>>>>>>>>>>>> in find_command_blocks: " << std::endl;
+//    print();
+//    std::cout << "<<<<<<<<<<<<<<<<" << std::endl;
     // Blocks are defined as what's between the start and end keywords.
     // Blocks may contain sub-blocks.
 //    std::cout << "subblock search command list size: " << commandList.size() << std::endl;
@@ -175,8 +178,14 @@ std::vector<initCommandSet*> initCommandSet::find_command_blocks(void) {
         commandBlockList.insert(commandBlockList.begin(), cmdBlock);
 //        commandBlockList.push_back(cmdBlock);
 //        std::cout << "inserted a non-delimited command block at the beginning" << std::endl;
-//        cmdBlock->print("non-delimited block:");
+//        std::cout << "found a non-delimited command block" << std::endl;
+//        cmdBlock->print("******* non-delimited block:");
+//        std::cout << "******* end non-delimited block" << std::endl;
     }
+//    std::cout << "================ final commandBlockList: " << std::endl;
+//    for (int i=0; i<commandBlockList.size(); i++)
+//        commandBlockList[i]->print();
+//    std::cout << "================ end final commandBlockList" << std::endl;
     return commandBlockList;
 }
 

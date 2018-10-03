@@ -109,6 +109,7 @@ start
 				complexHexMaskFPM
 				name:complexHexMaskFPM
 				maskNRings: 32
+				fpmMaskSize: 1024
 				hexStep: 1
 				fpmArraySize: 2048
 				fpmScaleFactor: 0.9
@@ -120,7 +121,8 @@ start
 #				sagFilename:wfirst_sags.fits
 #				sagFilename:optTestcopy/bestOptVector.fits
 #				sagFilename:polyResp_m90_90_2_8/bestOptVector_2.96217e-08.fits
-				sagFilename:resp_m90_90_2_8/bestOptVector8.61172e-09.fits
+#				sagFilename:resp_m90_90_2_8/bestOptVector8.61172e-09.fits
+				sagFilename:resp_m90_90_2_8/optTest/bestOptVector.fits
 #				sagFilename:sag_m180_180_1p5_8_poly.fits
 #				sagFilename:sag_m180_180_1_3_poly_1.89em9.fits
 #				sagFilename:sag_m20_20_1_3_poly.fits
@@ -218,11 +220,11 @@ start
 #	anglesInDegrees:-30,30
 	filename:regionContrast.txt
 	draw:on
-#end
+end
 #start
 #	makeHexCFpmResponse
-#	DataToOptimize:FPM,sags
-#	outputDirectory:testResponse
+#	dataToOptimize:FPM,sags
+#	outputDirectory:resp_m90_90_2_8/testResponse
 #	start
 #		regionContrast
 #		referenceLambda:5.65e-7

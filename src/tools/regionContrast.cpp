@@ -46,6 +46,14 @@ void regionContrast::set(std::string fieldName, const char *arg) {
         referenceLambda = atof(arg);
         set_loD();
     }
+    else if (fieldName == "xlimit") {
+        float v1, v2;
+        // arg is a comma separated pair of doubles
+        sscanf(arg, "%f, %f", &v1, &v2);
+        xlim1 = (double) v1;
+        xlim2 = (double) v2;
+        std::cout << "region xlimit: " << xlim1 << " to " << xlim2 << std::endl;
+    }
     else if (fieldName == "anglesInDegrees") {
         float v1, v2;
         // arg is a comma separated pair of doubles
@@ -81,10 +89,13 @@ void regionContrast::set(std::string fieldName, const char *arg) {
 void regionContrast::get_region_pixels(efield *E, arma::uvec& pixelIndex) {
     
     std::cout << "get_region_pixels: loD=" << loD << " radius1=" << radius1 << " radius2=" << radius2 << " angle1=" << angle1 << " angle2=" << angle2 << std::endl;
-    arma::umat inSample = (E->arrayGeometry.pixelRR/loD >= radius1)
-    % (E->arrayGeometry.pixelRR/loD <= radius2)
-    % (E->arrayGeometry.pixelTT > angle1*M_PI/180)
-    % (E->arrayGeometry.pixelTT < angle2*M_PI/180);
+    arma::umat inSample =
+        (E->arrayGeometry.pixelXX/loD >= xlim1)
+        % (E->arrayGeometry.pixelXX/loD <= xlim2)
+        % (E->arrayGeometry.pixelRR/loD >= radius1)
+        % (E->arrayGeometry.pixelRR/loD <= radius2)
+        % (E->arrayGeometry.pixelTT > angle1*M_PI/180)
+        % (E->arrayGeometry.pixelTT < angle2*M_PI/180);
     
     pixelIndex = find(inSample);
 }
@@ -110,28 +121,50 @@ void regionContrast::set_loD(void) {
     std::cout << "referenceLambda = " << referenceLambda << ", loD = " << loD << std::endl;
 }
 
+double regionContrast::compute_intensity(efield *E, arma::mat& intensitySum, int calibrationState) {
+//    arma::wall_clock timer;
+
+    globalCoronagraph->set_calibration_state(calibrationState);
+//    timer.tic();
+    globalCoronagraph->execute(E, 0);
+//    std::cout << "region contrast calibration csim execution time: " << timer.toc() << " seconds" << std::endl;
+    
+    arma::cube intensity;
+    intensity.zeros(size(*(E->E[0][0])));
+    for (int s=0; s<E->E.size(); s++) {
+        for (int p=0; p<E->E[s].size(); p++) {
+            intensity += real(*(E->E[s][p]) % arma::conj(*(E->E[s][p])));
+        }
+    }
+    intensitySum = sum(intensity, 2);
+    double maxIntensity = max(max(intensitySum));
+    
+    return (maxIntensity);
+}
+
 void regionContrast::compute_contrast(void) {
-    arma::wall_clock timer;
     
     efield *calibEfield = new efield(*initialEfield);
     calibEfield->set("name", "calibration Efield");
     efield *fullEfield = new efield(*initialEfield);
     fullEfield->set("name", "FPM Efield");
     
-    globalCoronagraph->set_calibration_state(true);
-    timer.tic();
-    globalCoronagraph->execute(calibEfield, 0);
-    std::cout << "region contrast calibration csim execution time: " << timer.toc() << " seconds" << std::endl;
-    
-    globalCoronagraph->set_calibration_state(false);
-    timer.tic();
-    globalCoronagraph->execute(fullEfield, 0);
-    std::cout << "region contrast csim execution time: " << timer.toc() << " seconds" << std::endl;
-    
+    arma::mat calibIntensity;
+    double calibMaxIntensity = compute_intensity(calibEfield, calibIntensity, true);
+    save_mat("calibration_PSF.fits", calibIntensity);
+    std::cout << "calibMaxIntensity = " << calibMaxIntensity << std::endl;
+
+    arma::mat fullIntensity;
+    double fullMaxIntensity = compute_intensity(fullEfield, fullIntensity, false)/calibMaxIntensity;
+    fullIntensity /= calibMaxIntensity;
+    save_mat("normalized_PSF.fits", fullIntensity);
+    std::cout << "fullMaxIntensity = " << fullMaxIntensity << std::endl;
+
     print("contrast region:");
     arma::uvec pixelIndex;
     arma::vec pixelX;
     arma::vec pixelY;
+
     get_region_pixels(fullEfield, pixelIndex, pixelX, pixelY);
 //    std::cout << "there are " << pixelIndex.n_elem << " pixels: " << std::endl;
 //    std::cout << pixelIndex << std::endl;
@@ -142,33 +175,8 @@ void regionContrast::compute_contrast(void) {
 //    save_vec("trueEVecRe.fits", evecRe);
 //    save_vec("trueEVecIm.fits", evecIm);
 
-    arma::cube calibIntensity;
-    calibIntensity.zeros(size(*(calibEfield->E[0][0])));
-    for (int s=0; s<calibEfield->E.size(); s++) {
-        for (int p=0; p<calibEfield->E[s].size(); p++) {
-            calibIntensity += real(*(calibEfield->E[s][p]) % arma::conj(*(calibEfield->E[s][p])));
-        }
-    }
-    arma::mat calibIntensitySum = sum(calibIntensity, 2);
-    double calibMaxIntensity = max(max(calibIntensitySum));
-    std::cout << "calibMaxIntensity = " << calibMaxIntensity << std::endl;
-
-    save_mat("calibration_PSF.fits", calibIntensitySum);
-    
-    arma::cube fullIntensity;
-    fullIntensity.zeros(size(*(calibEfield->E[0][0])));
-    for (int s=0; s<fullEfield->E.size(); s++) {
-        for (int p=0; p<fullEfield->E[s].size(); p++) {
-            fullIntensity += real(*(fullEfield->E[s][p]) % arma::conj(*(fullEfield->E[s][p])));
-        }
-    }
-    arma::vec fullPx = fullEfield->arrayGeometry.pixelX/loD;
-    arma::vec fullPy = fullEfield->arrayGeometry.pixelY/loD;
-    arma::mat fullIntensitySum = sum(fullIntensity, 2)/calibMaxIntensity;
-    std::cout << "fullMaxIntensity = " << max(max(fullIntensitySum)) << std::endl;
-
     if (draw) {
-        arma::umat matIndex = arma::ind2sub(size(fullIntensitySum), pixelIndex);
+        arma::umat matIndex = arma::ind2sub(size(fullIntensity), pixelIndex);
         int minRow = min(matIndex(0,arma::span::all));
         int maxRow = max(matIndex(0,arma::span::all));
         int minCol = min(matIndex(1,arma::span::all));
@@ -176,18 +184,15 @@ void regionContrast::compute_contrast(void) {
         
 //        std::cout << "bounding indices: " << minRow << ", " << maxRow << ", " << minCol << ", " << maxCol << std::endl;
         
-        arma::mat drawContrastMat = zeros(arma::size(fullIntensitySum));
+        arma::mat drawContrastMat = zeros(arma::size(fullIntensity));
         for (int i=0; i<pixelIndex.n_elem; i++)
             drawContrastMat(pixelIndex(i)) = 1.0;
-        drawContrastMat = drawContrastMat % fullIntensitySum;
+        drawContrastMat = drawContrastMat % fullIntensity;
         arma::mat contrastRegionExtract = drawContrastMat(arma::span(minRow,maxRow),arma::span(minCol,maxCol));
         draw_mat(log10(contrastRegionExtract), arma::min(pixelX/loD), arma::max(pixelX/loD), arma::min(pixelY/loD), arma::max(pixelY/loD), "normalized full coronagraph PSF", "matlab");
     }
     
-    
-    save_mat("normalized_PSF.fits", fullIntensitySum);
-    
-    double contrast = arma::mean(fullIntensitySum(pixelIndex));
+    double contrast = arma::mean(fullIntensity(pixelIndex));
     std::cout << "region contrast: " << contrast << std::endl;
 
     assert(filename != NULL);

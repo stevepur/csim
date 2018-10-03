@@ -14,6 +14,7 @@
 
 class mask : public celem {
     arma::mat maskMat;
+    arma::cx_mat cxMaskMat;
     
 public:
     mask();

@@ -38,7 +38,20 @@ efield* fresnelPropagator::execute(efield* E, celem* prev, celem* next, double t
 
     for (int s=0; s<E->E.size(); s++) {
         for (int p=0; p<E->E[s].size(); p++) {
-            propagator.execute(*(E->E[s][p]), lambda, E->arrayRadiusPhysical, z);
+            if (padFactor == 1)
+                propagator.execute(*(E->E[s][p]), lambda, E->arrayRadiusPhysical, z);
+            else {
+                std::cout << "==================== padding fresnel ====================" << std::endl;
+                int nRowsE = E->E[s][p]->n_rows;
+                int nColsE = E->E[s][p]->n_cols;
+                arma::cx_cube paddedE;
+                paddedE = arma::zeros<arma::cx_cube>(2*nRowsE, 2*nColsE, E->E[0][0]->n_slices);
+                // embed E in the zero-padded cube
+                paddedE(arma::span(nRowsE/2, 3*nRowsE/2-1), arma::span(nColsE/2, 3*nColsE/2-1), arma::span::all) = *(E->E[s][p]);
+                propagator.execute(paddedE, lambda, padFactor*E->arrayRadiusPhysical, z);
+                for (int sl=0; sl<E->E[s][p]->n_slices; sl++)
+                    E->E[s][p]->slice(sl) = paddedE(arma::span(nRowsE/2, 3*nRowsE/2-1), arma::span(nColsE/2, 3*nColsE/2-1), arma::span(sl, sl));
+            }
         }
     }
     
@@ -67,6 +80,10 @@ void fresnelPropagator::set(std::string fieldName, const char *arg) {
             propagationSign = pSign;
         else
             std::cout << "!!!! illegal propagationSign, ignoring" << std::endl;
+    }
+    else if (fieldName == "padFactor") {
+        padFactor = atoi(arg);
+        std::cout << "========= set padFactor to " << padFactor << std::endl;
     }
     else if (!found)
         std::cout << "!!! fresnelPropagator bad set field name: " << fieldName << std::endl;

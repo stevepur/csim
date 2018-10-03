@@ -22,6 +22,7 @@
 #include "regionContrast.hpp"
 #include "makeHexCFpmResponse.hpp"
 #include "differentialEvolutionOptimizer.hpp"
+#include "nloptOptimizer.hpp"
 
 int main(int argn, char **argv) {
     arma::wall_clock timer;
@@ -83,6 +84,11 @@ int main(int argn, char **argv) {
             // create and execute the contrast curve tool
             differentialEvolutionOptimizer *deOptimizer = new differentialEvolutionOptimizer(cmdBlocks[i]);
             deOptimizer->optimize();
+        }
+        if (!strcmp(cmdBlocks[i]->commandList[0]->getCmdStr(), "nloptOptimizer")) {
+            // create and execute the contrast curve tool
+            nloptOptimizer *nlOptimizer = new nloptOptimizer(cmdBlocks[i]);
+            nlOptimizer->optimize();
         }
         if (!strcmp(cmdBlocks[i]->commandList[0]->getCmdStr(), "execute")) {
             // do a single execution of the global coronagraph

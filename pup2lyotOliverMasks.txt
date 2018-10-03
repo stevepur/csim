@@ -184,7 +184,7 @@ start
 end
 #start
 #	makeHexCFpmResponse
-#	DataToOptimize:FPM,sags
+#	dataToOptimize:FPM,sags
 #	outputDirectory:segmented/responseData
 #	start
 #		regionContrast

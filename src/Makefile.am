@@ -10,15 +10,17 @@ elements/libelements.la \
 telescope/libtelescope.la \
 data/libdata.la \
 lib/libcsim.la \
+$(MY_LIBDIR)/nlopt-2.5.0/build/lib/libnlopt.a \
 $(MY_LIBDIR)/fftw-3.3.7/libfftw3.la \
 $(MY_LIBDIR)/fftw-3.3.7/threads/libfftw3_omp.la \
 $(MY_LIBDIR)/cfitsio/libcfitsio.a \
--lblas -llapack
+-lblas -llapack -lm
 
 csim_CPPFLAGS = \
 -I$(MY_LIBDIR)/cfitsio/include \
 -I$(MY_LIBDIR)/armadillo-8.500.1/include \
 -I$(MY_LIBDIR)/fftw-3.3.7/include \
+-I$(MY_LIBDIR)/nlopt-2.5.0/build/include \
 -Ilib \
 -Icoronagraph \
 -Idata \
@@ -35,15 +37,17 @@ elements/libelements.la \
 telescope/libtelescope.la \
 data/libdata.la \
 lib/libcsim.la \
+$(MY_LIBDIR)/nlopt-2.5.0/build/lib/libnlopt.a \
 $(MY_LIBDIR)/fftw-3.3.7/libfftw3.la \
 $(MY_LIBDIR)/fftw-3.3.7/threads/libfftw3_omp.la \
 $(MY_LIBDIR)/cfitsio/libcfitsio.a \
--L/Developer/NVIDIA/CUDA-9.2/lib -lnvblas -lblas -llapack
+-L/Developer/NVIDIA/CUDA-10.0/lib -lnvblas -lblas -llapack  -lm
 
 csim_gpu_CPPFLAGS = \
 -I$(MY_LIBDIR)/cfitsio/include \
 -I$(MY_LIBDIR)/armadillo-8.500.1/include \
 -I$(MY_LIBDIR)/fftw-3.3.7/include \
+-I$(MY_LIBDIR)/nlopt-2.5.0/build/include \
 -Ilib \
 -Icoronagraph \
 -Idata \
@@ -60,15 +64,17 @@ elements/libelements.la \
 telescope/libtelescope.la \
 data/libdata.la \
 lib/libcsim.la \
+$(MY_LIBDIR)/nlopt-2.5.0/build/lib/libnlopt.a \
 $(MY_LIBDIR)/fftw-3.3.7/libfftw3.la \
 $(MY_LIBDIR)/fftw-3.3.7/threads/libfftw3_omp.la \
 $(MY_LIBDIR)/cfitsio/libcfitsio.a \
--lblas -llapack
+-lblas -llapack  -lm
 
 test_CPPFLAGS = \
 -I$(MY_LIBDIR)/cfitsio/include \
 -I$(MY_LIBDIR)/armadillo-8.500.1/include \
 -I$(MY_LIBDIR)/fftw-3.3.7/include \
+-I$(MY_LIBDIR)/nlopt-2.5.0/build/include \
 -Ilib \
 -Icoronagraph \
 -Idata \

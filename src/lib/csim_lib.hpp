@@ -15,5 +15,6 @@
 #include "csim_geom.hpp"
 #include "csim_parser.hpp"
 #include "csim_plot.hpp"
+#include "csim_utils.hpp"
 
 #endif /* csim_lib_hpp */

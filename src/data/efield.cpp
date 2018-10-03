@@ -102,10 +102,11 @@ efield::efield(efield& in) {
     arrayRadiusPhysical = in.arrayRadiusPhysical;
     
     arrayGeometry = in.arrayGeometry;
+    initArrayGeometry = in.initArrayGeometry;
 }
 
-efield::efield(char *filename) {
-    init(filename);
+efield::efield(char *reFilename, char *imFilename) {
+    init(reFilename, imFilename);
 }
 
 efield::efield(initCommandSet*& cmdBlock) {
@@ -160,7 +161,8 @@ efield& efield::operator=(const efield& in) {
     arrayRadiusPhysical = in.arrayRadiusPhysical;
     
     arrayGeometry = in.arrayGeometry;
-    
+    initArrayGeometry = in.initArrayGeometry;
+
     return *this;
 }
 
@@ -176,8 +178,8 @@ void efield::init(double initValue) {
 // input flux is relative to central star flux = 1
 void efield::init_point_sources(void) {
     std::complex<double> i1(0, 1);
-
-    for (int s=0; s<pointSourceList.size(); s++) {
+    int startInitedSources = nInitedSources;
+    for (int s=nInitedSources; s<pointSourceList.size()+startInitedSources; s++) {
         // does a slot for this source exist?
         if (s >= E.size()) {
             // add the source
@@ -199,6 +201,7 @@ void efield::init_point_sources(void) {
                                + 2*arrayGeometry.pixelYY*pointSourceList[s].tiltY/arrayGeometry.physicalSizeY));
             }
         }
+        nInitedSources++;
     }
 }
 
@@ -208,18 +211,36 @@ void efield::add_point_source(double flux, double tipX, double tiltY) {
     pointSourceList[pointSourceList.size()-1].print("added point source ");
 }
 
-void efield::init(char *filename) {
+void efield::init(char *reFilename, char *imFilename) {
     void *data = NULL;
     int nDims = 0;
     long *dims = NULL;
     int dataType;
+    arma::cube reMat;
+    arma::cube imMat;
     
-    read_fits_array(filename, &data, nDims, &dims, dataType);
+    load_cube(reFilename, reMat);
+    load_cube(imFilename, imMat);
 
-    if (nDims == 3)
-        set_size(dims[0], dims[1], dims[2]);
-    else if (nDims == 2)
-        set_size(dims[0], dims[1], 1);
+    arma::cx_cube tmpE(reMat.n_rows, reMat.n_cols, reMat.n_slices);
+    tmpE.set_real(reMat);
+    tmpE.set_imag(imMat);
+    
+    set_size(reMat.n_rows, reMat.n_cols, reMat.n_slices);
+
+    // does a slot for this source exist?
+    if (nInitedSources >= E.size()) {
+        // add the source
+        arma::cx_cube *newE = new arma::cx_cube;
+        newE->ones(size(*E[0][0]));
+        polarizations tmpP;
+        tmpP.push_back(newE);
+        E.push_back(tmpP);
+    }
+    // set the source
+    E[nInitedSources][0]->set_size(reMat.n_rows, reMat.n_cols, reMat.n_slices);
+    *E[nInitedSources][0] = tmpE;
+    nInitedSources++;
 }
 
 void efield::init(initCommandSet*& cmdBlock) {
@@ -236,7 +257,7 @@ void efield::init(initCommandSet*& cmdBlock) {
     set_optical_parameters();
     set_array_geometry();
     init_point_sources();
-    print();
+//    print();
 }
 
 void efield::set(std::string fieldName, const char *arg) {
@@ -249,6 +270,23 @@ void efield::set(std::string fieldName, const char *arg) {
         int nLambda;
         sscanf(arg, "%d, %d, %d", &nRows, &nCols, &nLambda);
         set_size(nRows, nCols, nLambda);
+    }
+    else if (fieldName == "filename") {
+        // arg is two filenames separated by a comma, each giving
+        // the .fits amplitude and phase filename that contains the complexMask definition
+        const char *cPtr = strchr(arg, ',');
+        int strAmpLen = cPtr - arg;
+        int strPhLen = strlen(arg) - strAmpLen + 1;
+        std::cout << "strAmpLen " << strAmpLen << ", strPhLen " << strPhLen << std::endl;
+        char *strAmp = new char[strAmpLen + 1];
+        char *strPh = new char[strPhLen + 1];
+        strncpy(strAmp, arg, strAmpLen);
+        strAmp[strAmpLen] = '\0';
+        strncpy(strPh, cPtr + 1, strPhLen);
+        strPh[strPhLen] = '\0';
+        std::cout << "loading " << strAmp << " and " << strPh << std::endl;
+        init(strAmp, strPh);
+        //        draw("initial FPM");
     }
     else if (fieldName == "constantValue") {
         // arg is one double value
@@ -396,7 +434,9 @@ void efield::set_array_geometry(void) {
     assert(arrayRadiusPhysical != 0 & E[0][0]->n_rows != 0 & E[0][0]->n_cols != 0);
     
     arrayGeometry.set_geometry(E[0][0], pixelScale);
-    arrayGeometry.print("Efield");
+    initArrayGeometry.set_geometry(E[0][0], pixelScale);
+
+//    arrayGeometry.print("Efield");
 }
 
 void efield::set_size(int nRows, int nColumns, int nLambda) {

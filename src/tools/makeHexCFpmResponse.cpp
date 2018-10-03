@@ -50,7 +50,7 @@ void makeHexCFpmResponse::init_block(initCommandSet*& cmdBlock) {
 void makeHexCFpmResponse::set(std::string fieldName, const char *arg) {
     if (fieldName == "makeHexCFpmResponse")
         ;
-    else if (fieldName == "DataToOptimize") {
+    else if (fieldName == "dataToOptimize") {
         // arg is two strings separated by a comma,
         // the first string is the name of the component to be optimized
         // the second string is the name of the data to be optimized

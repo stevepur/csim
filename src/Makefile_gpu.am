@@ -38,7 +38,7 @@ lib/libcsim.la \
 $(MY_LIBDIR)/fftw-3.3.7/libfftw3.la \
 $(MY_LIBDIR)/fftw-3.3.7/threads/libfftw3_omp.la \
 $(MY_LIBDIR)/cfitsio/libcfitsio.a \
--L/Developer/NVIDIA/CUDA-8.0/lib -lnvblas -lblas -llapack
+-L/Developer/NVIDIA/CUDA-10.0/lib -lnvblas -lblas -llapack
 
 csim_gpu_CPPFLAGS = \
 -I$(MY_LIBDIR)/cfitsio/include \

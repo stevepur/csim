@@ -22,6 +22,9 @@ class fraunhoferFocal : public celem {
     double scaleFlD = 0;
     double focalLength = 0;
     
+    int currentNx = 0;
+    int currentNy = 0;
+    
 public:
     fraunhoferFocal();
     fraunhoferFocal(initCommandSet*& cmdBlock);

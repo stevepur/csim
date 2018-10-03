@@ -11,6 +11,14 @@ to make fftw fftw-3.3.7:
 ./configure --enable-openmp CC="g++-mp-6"
 make
 
+building nlopt:
+export MY_LIBDIR=/Users/steve/programming_projects/gnu
+mkdir build
+cd build
+cmake -DCMAKE_INSTALL_PREFIX=$MY_LIBDIR/nlopt-2.5.0/build ..
+make
+make install
+
 
 # enable openmp  PREFERRED DEFAULT
 export MY_LIBDIR=/Users/steve/programming_projects/gnu
@@ -22,7 +30,7 @@ make
 # for old cuda library: export LD_LIBRARY_PATH=/Developer/NVIDIA/CUDA-8.0/lib
 
 # to enable gpu
-export LD_LIBRARY_PATH=/Developer/NVIDIA/CUDA-9.2/lib
+export LD_LIBRARY_PATH=/Developer/NVIDIA/CUDA-10.0/lib
 export NVBLAS_CONFIG_FILE=/Users/steve/programming_projects/gnu/armadillo-7.800.1/examples/nvblas.conf 
 
 # default

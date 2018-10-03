@@ -113,7 +113,11 @@ class fpmPupToLyot : public celem {
     arma::cx_cube fpmMatAmp;
     arma::cx_cube fftMaskHatCalib;
     arma::cx_cube fftMaskHat;
-
+    
+    arma::cx_mat fftPaddedE;
+    arma::cx_mat fftMHatTimesfftPaddedE;
+    arma::cx_vec fftMHatTimesfftPaddedEScale;
+    
     arma::cx_cube paddedE;
     double *lambdaFocalLength = NULL;
     

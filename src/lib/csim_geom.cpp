@@ -236,6 +236,107 @@ void arrayGeom::draw(void) {
     draw_mat(pixelTT, pixelX(0), pixelX(pixelX.n_elem-1), pixelY(0), pixelY(pixelY.n_elem-1), "arrayGeom pixelTT", "matlab");
 }
 
+/*
+ -----------------------------------
+ non-object library functions
+ -----------------------------------
+*/
+void interp2(arma::mat& in, arma::mat& out, arma::vec& inPixelX, arma::vec& inPixelY, arma::vec& outPixelX, arma::vec& outPixelY) {
+
+    arma::mat s1 = arma::zeros<arma::mat>(in.n_rows, out.n_cols);
+//    std::cout << "size(in) = " << size(in) << std::endl;
+//    std::cout << "size(s1) = " << size(s1) << std::endl;
+    #pragma omp parallel for
+    for (int r=0; r<in.n_rows; r++) {
+        arma::vec vIn = trans(in.row(r));
+        arma::vec vTmp;
+//        std::cout << "interp1: size(inGeom.pixelX) = " << size(inPixelX) << ", size(vIn) = " << size(vIn) << ", size(outPixelX) = " << size(outPixelX) << std::endl;
+        arma::interp1(inPixelX, vIn, outPixelX, vTmp, "*linear", 0);
+//      std::cout << "size(vTmp) = " << size(vTmp) << std::endl;
+        s1.row(r) = trans(vTmp);
+    }
+//    std::cout << "first interp1 complete" << std::endl;
+    #pragma omp parallel for
+    for (int c=0; c<s1.n_cols; c++) {
+        arma::vec vTmp;
+        arma::interp1(inPixelY, s1.col(c), outPixelY, vTmp, "*linear", 0);
+        out.col(c) = vTmp;
+    }
+//    std::cout << "second interp1 complete" << std::endl;
+}
+
+void downsample_via_convolution(arma::mat& in, arma::mat& outMat, arma::vec& inPixelX, arma::vec& inPixelY, arma::vec& outPixelX, arma::vec& outPixelY) {
+    
+    // assume a uniform resampling factor
+    
+    arma::mat out;
+    out.set_size(outPixelX.n_elem, outPixelY.n_elem);
+    
+    if (round((double)in.n_rows) > round((double)out.n_rows)) {
+        int sampleFactor = (int) ceil(round((double)in.n_rows)/((double)out.n_rows));
+//        std::cout << "downsample sampleFactor = " << sampleFactor << std::endl;
+#if 0
+        arma::mat kernel = arma::ones<arma::mat>(sampleFactor, sampleFactor);
+        
+        
+        //    draw_mat(in, "downsample_via_convolution in");
+        arma::mat paddedIn = arma::zeros<arma::mat>(in.n_rows + 2*sampleFactor, in.n_cols + 2*sampleFactor);
+        //    std::cout << "size paddedIn: " << size(paddedIn) << std::endl;
+        //    std::cout << "filling paddedIn" << std::endl;
+        //    std::cout << "size submat paddedIn: " << size(paddedIn.submat(sampleFactor, sampleFactor, paddedIn.n_rows-sampleFactor-1, paddedIn.n_cols-sampleFactor-1)) << std::endl;
+        paddedIn.submat(sampleFactor, sampleFactor, paddedIn.n_rows-sampleFactor-1, paddedIn.n_cols-sampleFactor-1) = in;
+        //    draw_mat(paddedIn, "center paddedIn");
+        //    std::cout << "setting low rows" << std::endl;
+        paddedIn.submat(0, sampleFactor, sampleFactor-1, paddedIn.n_cols-sampleFactor-1) = repmat(in.row(0), sampleFactor, 1);
+        //    draw_mat(paddedIn, "low row paddedIn");
+        //    std::cout << "setting high rows" << std::endl;
+        paddedIn.submat(paddedIn.n_rows-sampleFactor, sampleFactor, paddedIn.n_rows-1, paddedIn.n_cols-sampleFactor-1) = repmat(in.row(in.n_rows-1), sampleFactor, 1);
+        //    draw_mat(paddedIn, "high row paddedIn");
+        //    std::cout << "setting low cols" << std::endl;
+        paddedIn.submat(sampleFactor, 0, paddedIn.n_rows-sampleFactor-1, sampleFactor-1) = repmat(in.col(0), 1, sampleFactor);
+        //    draw_mat(paddedIn, "low col paddedIn");
+        //    std::cout << "setting high cols" << std::endl;
+        paddedIn.submat(sampleFactor, paddedIn.n_cols-sampleFactor, paddedIn.n_rows-sampleFactor-1, paddedIn.n_cols-1) = repmat(in.col(in.n_cols-1), 1, sampleFactor);
+        
+        //    draw_mat(paddedIn, "final paddedIn");
+        arma::mat tmpC = arma::conv2(paddedIn, kernel, "same");
+        //    draw_mat(tmpC, "result of convolution");
+        arma::mat tmpOut = tmpC.submat(sampleFactor, sampleFactor, paddedIn.n_rows-sampleFactor-1, paddedIn.n_cols-sampleFactor-1)/sum(sum(kernel));
+#endif
+        interp2(in, out, inPixelX, inPixelY, outPixelX, outPixelY);
+    } else {
+        int sampleFactor = (int) ceil(round(((double)out.n_rows)/(double)in.n_rows));
+        std::cout << "upsample sampleFactor = " << sampleFactor << std::endl;
+        
+        interp2(in, out, inPixelX, inPixelY, outPixelX, outPixelY);
+    }
+    outMat = out;
+}
+
+
+void downsample_via_convolution(arma::mat& in, arma::mat& outMat, int requiredNRows) {
+    
+    // assume a uniform resampling factor
+    if (in.n_rows == requiredNRows)
+        return;
+    
+    arma::vec inPixelX = arma::linspace(0, 1, in.n_rows);
+    arma::vec inPixelY = arma::linspace(0, 1, in.n_cols);
+    arma::vec outPixelX = arma::linspace(0, 1, requiredNRows);
+    arma::vec outPixelY = arma::linspace(0, 1, requiredNRows);
+    
+    downsample_via_convolution(in, outMat, inPixelX, inPixelY, outPixelX, outPixelY);
+}
+
+void downsample_via_convolution(arma::mat& in, arma::mat& outMat, arrayGeom& inGeom, arrayGeom& outGeom) {
+    
+    // assume a uniform resampling factor
+    if (inGeom.pixelX.n_elem == outGeom.pixelX.n_elem)
+        return;
+//    inGeom.print("inGeom:");
+//    outGeom.print("outGeom:");
+    downsample_via_convolution(in, outMat, inGeom.pixelX, inGeom.pixelY, outGeom.pixelX, outGeom.pixelY);
+}
 
 
 

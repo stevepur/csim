@@ -38,6 +38,7 @@ public:
     bool set(std::string fieldName, const char *arg);
     virtual void get_optimization_data(const char *dataName, void *data) {}
     virtual void set_optimization_data(const char *dataName, void *data) {}
+    virtual void save_optimization_data(const char *dataName, char *outputDirectory = NULL) {}
     void print(const char *hdr = "");
     virtual void draw(const char *title);
 };

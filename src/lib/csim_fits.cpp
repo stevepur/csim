@@ -528,6 +528,41 @@ void save_mat(const char *filename, arma::cx_mat& saveMat, const char *saveType,
     }
 }
 
+void save_vec(const char *filename, arma::cx_vec& saveVec, const char *saveType, int verbose) {
+    std::string fString = filename;
+    char nameRoot[200];
+    char saveName[200];
+    
+    int fitPos = fString.find(".fits");
+    if (fitPos > 0) {
+        fString.copy(nameRoot, fitPos);
+        nameRoot[fitPos] = '\0';
+    } else
+        strcpy(nameRoot, filename);
+    if (verbose)
+        std::cout << "nameRoot: " << nameRoot << std::endl;
+    
+    if (!strcmp(saveType, "reIm")) {
+        strcpy(saveName, nameRoot);
+        strcat(saveName, "_re.fits");
+        arma::vec tmp = real(saveVec);
+        save_vec(saveName, tmp, verbose);
+        strcpy(saveName, nameRoot);
+        strcat(saveName, "_im.fits");
+        tmp = imag(saveVec);
+        save_vec(saveName, tmp, verbose);
+    }
+    if (!strcmp(saveType, "amPh")) {
+        strcpy(saveName, nameRoot);
+        strcat(saveName, "_am.fits");
+        arma::vec tmp = abs(saveVec);
+        save_vec(saveName, tmp, verbose);
+        strcpy(saveName, nameRoot);
+        strcat(saveName, "_ph.fits");
+        tmp = arg(saveVec);
+        save_vec(saveName, tmp, verbose);
+    }
+}
 
 void save_vec(const char *filename, arma::vec& saveVec, int verbose) {
     if (verbose)

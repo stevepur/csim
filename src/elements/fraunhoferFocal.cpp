@@ -42,7 +42,11 @@ efield* fraunhoferFocal::execute(efield* E, celem* prev, celem* next, double tim
 //    E->arrayGeometry.print("fraunhoferFocal input E geometry: ");
 //    arrayGeometry.print("fraunhoferFocal output E geometry: ");
     
-    propZoomFft.init(E->arrayGeometry, arrayGeometry, lambdaFocalLength, E->E[0][0]->n_slices);
+    if (E->arrayGeometry.pixelX.n_elem != currentNx | E->arrayGeometry.pixelY.n_elem != currentNy) {
+        propZoomFft.init(E->arrayGeometry, arrayGeometry, lambdaFocalLength, E->E[0][0]->n_slices);
+        currentNx = E->arrayGeometry.pixelX.n_elem;
+        currentNy = E->arrayGeometry.pixelY.n_elem;
+    }
     
     for (int s=0; s<E->E.size(); s++) {
         for (int p=0; p<E->E[s].size(); p++) {

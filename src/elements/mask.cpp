@@ -25,11 +25,22 @@ efield* mask::execute(efield* E, celem* prev, celem* next, double time) {
 //    std::cout << "executed binary mask " << name << std::endl;
 
     pre_execute(E, prev, next, time);
+    if (maskMat.n_rows != E->E[0][0]->n_rows) {
+//        draw_mat(maskMat, "mask before downsampling");
+        downsample_via_convolution(maskMat, maskMat, E->initArrayGeometry, E->arrayGeometry);
+//        draw_mat(maskMat, "mask after downsampling");
+        cxMaskMat.set_size(size(maskMat));
+        cxMaskMat.set_real(maskMat);
+        cxMaskMat.set_imag(maskMat);
+    }
+//    save_mat("resampled mask.fits", maskMat);
     
     for (int s=0; s<E->E.size(); s++) {
         for (int p=0; p<E->E[s].size(); p++) {
+            #pragma omp parallel for
             for (int k=0; k<E->E[s][p]->n_slices; k++) {
-                E->E[s][p]->slice(k) = real(E->E[s][p]->slice(k)) % maskMat + i1*(imag(E->E[s][p]->slice(k)) % maskMat); // element-wise multiplication
+//                E->E[s][p]->slice(k) = real(E->E[s][p]->slice(k)) % maskMat + i1*(imag(E->E[s][p]->slice(k)) % maskMat); // element-wise multiplication
+                E->E[s][p]->slice(k) = E->E[s][p]->slice(k) % cxMaskMat; // element-wise multiplication
             }
         }
     }
@@ -41,6 +52,9 @@ efield* mask::execute(efield* E, celem* prev, celem* next, double time) {
 
 void mask::init(const char *filename) {
     load_mat(filename, maskMat);
+    cxMaskMat.set_size(size(maskMat));
+    cxMaskMat.set_real(maskMat);
+    cxMaskMat.set_imag(maskMat);
 }
 
 void mask::init(initCommandSet*& cmdBlock) {

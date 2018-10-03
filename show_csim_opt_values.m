@@ -1,7 +1,9 @@
 figure;
 
-tgtGeomHexNum = fitsread('../../../donutPiaa/mask_data_hexNum.fits');
-tgtGeomNSubPix = fitsread('../../../donutPiaa/mask_data_nSubPix.fits');
+% tgtGeomHexNum = fitsread('../../../donutPiaa/mask_data_hexNum.fits');
+% tgtGeomNSubPix = fitsread('../../../donutPiaa/mask_data_nSubPix.fits');
+tgtGeomHexNum = fitsread('../../wfirst_base_mask_data_1024_hexNum.fits');
+tgtGeomNSubPix = fitsread('../../wfirst_base_mask_data_1024_nSubPix.fits');
 NBsubPix = 64;
 tgtGeomSagVals = zeros(size(tgtGeomHexNum));
 while (1) 

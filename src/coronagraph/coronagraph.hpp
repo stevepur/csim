@@ -50,7 +50,8 @@ public:
     // setters/getters for the optimization data
     void get_optimization_data(const char *componentName, const char *dataName, void *data);
     void set_optimization_data(const char *componentName, const char *dataName, void *data);
-    
+    void save_optimization_data(const char *componentName, const char *dataName, char *outputDirectory = NULL);
+
     // Execute the coronagraph by calling the execute method
     // of each celem object in elemList, passing the efield pointer E.
     // Modifies the efield pointed to by E.

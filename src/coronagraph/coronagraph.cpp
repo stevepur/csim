@@ -20,6 +20,7 @@
 #include "../elements/breakExecution.hpp"
 #include "../elements/mask.hpp"
 #include "../elements/mirror.hpp"
+#include "../elements/deformableMirror.hpp"
 #include "../elements/complexMask.hpp"
 #include "../elements/fresnelPropagator.hpp"
 #include "../elements/fraunhoferFocal.hpp"
@@ -28,6 +29,8 @@
 #include "../elements/fpmPupToLyot.hpp"
 #include "../elements/zoomDftPropagator.hpp"
 #include "../elements/zoomFftPropagator.hpp"
+#include "../elements/downsample.hpp"
+#include "../elements/upsample.hpp"
 
 // global pointer to the top-level coronagraph
 coronagraph *globalCoronagraph = NULL;
@@ -100,6 +103,11 @@ void coronagraph::init(initCommandSet*& cmdBlocks) {
             celem *newE = new mirror(subBlocks[j]);
             elemList.push_back(newE);
         }
+        // deformable prefect reflector mirror celem
+        else if (!strcmp(subBlocks[j]->commandList[0]->getCmdStr(), "deformableMirror")) {
+            celem *newE = new deformableMirror(subBlocks[j]);
+            elemList.push_back(newE);
+        }
         // fraunhoferFocal, which propagates to a focal plane via fraunhofer
         // propagation
         else if (!strcmp(subBlocks[j]->commandList[0]->getCmdStr(), "fraunhoferFocal")) {
@@ -130,6 +138,16 @@ void coronagraph::init(initCommandSet*& cmdBlocks) {
         // mask to a pupil (typically a Lyot stop).  Uses Fraunhofer propagation.
         else if (!strcmp(subBlocks[j]->commandList[0]->getCmdStr(), "fpmPupToLyot")) {
             celem *newE = new fpmPupToLyot(subBlocks[j]);
+            elemList.push_back(newE);
+        }
+        // downsample, which downsamples the E-field
+        else if (!strcmp(subBlocks[j]->commandList[0]->getCmdStr(), "downsample")) {
+            celem *newE = new downsample(subBlocks[j]);
+            elemList.push_back(newE);
+        }
+        // downsample, which downsamples the E-field
+        else if (!strcmp(subBlocks[j]->commandList[0]->getCmdStr(), "upsample")) {
+            celem *newE = new upsample(subBlocks[j]);
             elemList.push_back(newE);
         }
         else {
@@ -192,8 +210,18 @@ void coronagraph::get_optimization_data(const char *componentName, const char *d
 // set optimization data dataName from the component componentName
 void coronagraph::set_optimization_data(const char *componentName, const char *dataName, void *data) {
     for (std::list<celem*>::iterator it = elemList.begin(); it != elemList.end(); ++it) {
-        if (!strcmp((*it)->name, componentName))
+        if (!strcmp((*it)->name, componentName)) {
             (*it)->set_optimization_data(dataName, data);
+        }
+    }
+}
+
+// set optimization data dataName from the component componentName
+void coronagraph::save_optimization_data(const char *componentName, const char *dataName, char *outputDirectory) {
+    for (std::list<celem*>::iterator it = elemList.begin(); it != elemList.end(); ++it) {
+        if (!strcmp((*it)->name, componentName)) {
+            (*it)->save_optimization_data(dataName, outputDirectory);
+        }
     }
 }
 

@@ -23,6 +23,10 @@ start
 start
 	coronagraph
 	start
+		downsample
+		sampleFactor: 1
+	end
+	start
 		mask
 		filename:spc/pupil_WFIRST_for_SPC_20170501.fits
 		position:0

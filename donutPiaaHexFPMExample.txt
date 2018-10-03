@@ -105,7 +105,7 @@ start
 end
 #start
 #	makeHexCFpmResponse
-#	DataToOptimize:FPM,sags
+#	dataToOptimize:FPM,sags
 #	outputDirectory:donutPiaaFullCircleExample/mono_1p8_5/responseData
 #	start
 #		regionContrast

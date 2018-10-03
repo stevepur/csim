@@ -57,6 +57,7 @@ public:
 arma::cx_cube fft_shift(arma::cx_cube& in);
 arma::mat fft_shift(arma::mat& in);
 arma::cx_mat fft_shift(arma::cx_mat& in);
+arma::cx_mat fft_truncate(arma::cx_mat& in, int truncRows, int truncCols);
 
 class fresnelPropagateAS {
     fft myFft;

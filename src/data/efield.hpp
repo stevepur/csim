@@ -55,6 +55,7 @@ public:
     double wavelengthStart = 0;
     double wavelengthEnd = 0;
     double deltaWavelength = 0;
+    int nInitedSources = 0;
     
     lambdaDataClass *lambdaData;
     
@@ -81,19 +82,20 @@ public:
     //
     //
     arrayGeom arrayGeometry;
+    arrayGeom initArrayGeometry;
     ////////////////////////////////////////////////////////
     
     
     efield();
     efield(efield& in);
-    efield(char *filename);
+    efield(char *reFilename, char *imFilename);
     efield(int nRows, int nColumns, int nLambda = DEFAULT_N_LAMBDA);
     efield(initCommandSet*& cmdBlock);
     ~efield(void);
 
     efield& operator=(const efield& in);
 
-    void init(char *filename);
+    void init(char *reFilename, char *imFilename);
     void init(double initValue = DEFAULT_CONSTANT_VAL);
     void init(initCommandSet*& cmdBlock);
     

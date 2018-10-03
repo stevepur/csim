@@ -25,7 +25,7 @@ contrastCurve::contrastCurve(initCommandSet*& cmdBlocks) {
 }
 
 void contrastCurve::init(initCommandSet*& cmdBlock) {
-//    std::cout << "initing a contrastCurve" << std::endl;
+    std::cout << "initing a contrastCurve" << std::endl;
     
     for (int c=0; c<cmdBlock->commandList.size(); c++) {
         set(cmdBlock->commandList[c]->getCmdStr(),

@@ -66,5 +66,11 @@ public:
     void draw(void);
 };
 
+//////////////////////////////////////////
+//////////////////////////////////////////
+void interp2(arma::mat& in, arma::mat& out, arma::vec& inPixelX, arma::vec& inPixelY, arma::vec& outPixelX, arma::vec& outPixelY);
+void downsample_via_convolution(arma::mat& in, arma::mat& outMat, arma::vec& inPixelX, arma::vec& inPixelY, arma::vec& outPixelX, arma::vec& outPixelY);
+void downsample_via_convolution(arma::mat& in, arma::mat& out, int requiredNRows);
+void downsample_via_convolution(arma::mat& in, arma::mat& outMat, arrayGeom& inGeom, arrayGeom& outGeom);
 
 #endif /* csim_geom_hpp */

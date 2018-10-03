@@ -1,0 +1,38 @@
+#
+# optimize a PIAACMC hex mask
+#
+start
+	differentialEvolutionOptimizer
+	start
+		optHexRespObjective
+		responseDirectory:segmented/8Rings/monoTest/testResponse
+		objectiveType:max
+	end
+	# deRand1 or deLocalToBest1 or eitherOr
+	startStrategy:deLocalToBest1
+	baseStrategy:eitherOr
+	endStrategy:deLocalToBest1
+	reinitStrategy:eitherOr
+	populationSize:1000
+	initPopulationMean:zero
+#	initSpread:0.0
+	initSpread:1.0
+	reinitCompression:0.1
+	reinitSpread:1e-12
+	globalBounds:-5e-7, 5e-7
+	initBounds:-1e-8, 1e-8
+	initType:uniformRandom
+	maxIterations:1000000
+	stopObjectiveValue:1e-12
+	stopPopulationSpread:0
+	reinitChangefracThreshold:0.001
+	maxSmallChange:5
+	maxRetries:5000000
+	fWeight:0.5
+	crossoverProb:1.0
+	baseStrategySpreadSwitch:1e-7
+	endStrategySpreadSwitch:0
+	outputInterval:100
+	outputDirectory:segmented/8Rings/monoTest/optTest
+	saveState:0
+end

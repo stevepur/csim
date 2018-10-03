@@ -21,6 +21,7 @@ void init_fft_lib(bool computeFftWisdon) {
     fftw_import_wisdom_from_filename("fftw_wisdom.dat");
     
     if (computeFftWisdon) {
+//        fftPlanType = FFTW_ESTIMATE;
         fftPlanType = FFTW_EXHAUSTIVE;
         std::cout << "computing FFTW widsom" << std::endl;
     } else
@@ -95,14 +96,14 @@ void ifft::execute(arma::cx_cube& in, int length) {
 
 
 void fft::init(arma::cx_mat& in, int length) {
-    
+
     if (length > 0 & in.n_rows != length) {
         arma::cx_mat tmp = in;
         in.zeros(length, in.n_cols);
         in(arma::span(0,tmp.n_rows-1), arma::span(0,tmp.n_cols-1)) = tmp;
     }
     
-    if (fftPlan.nRows != in.n_rows || fftPlan.nCols != in.n_cols || fftPlan.nCols != 0) {
+    if (fftPlan.nRows != in.n_rows || fftPlan.nCols != in.n_cols || fftPlan.nSlices != 0) {
 #pragma omp critical (fftPlanning)  // let's be safe
         {
             if (fftPlan.nRows != 0)
@@ -134,7 +135,7 @@ void fft::init(arma::cx_mat& in, arma::cx_mat& out, int length) {
         in(arma::span(0,tmp.n_rows-1), arma::span(0,tmp.n_cols-1)) = tmp;
     }
     
-    if (fftPlan.nRows != in.n_rows || fftPlan.nCols != in.n_cols || fftPlan.nCols != 0) {
+    if (fftPlan.nRows != in.n_rows || fftPlan.nCols != in.n_cols || fftPlan.nSlices != 0) {
 #pragma omp critical (fftPlanning)  // let's be safe
         {
             if (fftPlan.nRows != 0)
@@ -318,6 +319,53 @@ arma::cx_mat fft_shift(arma::cx_mat& in) {
     return shiftE;
 }
 
+arma::cx_mat fft_truncate(arma::cx_mat& in, int truncRows, int truncCols) {
+    arma::cx_mat trunkMat(truncRows, truncCols);
+    
+    /* we want to extract truncRows (truncCols) frequencies, which means removing frequencies in the middle of the fft array:
+     Extract:
+     [ 0, 1, ..., ceil(trunkRows/2)-1, X, X, ..., X, X, in.n_rows-floor(truncRows/2), ..., in.n_rows-1 ]
+     where "X, X, ..., X, X" are the in.n_rows - truncRows elements to be removed.
+     If trunkRows is even, ceil(trunkRows/2) = floor(truncRows/2) = trunkRows/2, and we are extracting
+        trunkRows/2 + (in.n_rows - (in.n_rows - truncRows/2)) = truncRows elements.
+     If trunkRows is odd, ceil(trunkRows/2) = floor(trunkRows/2) + 1 so we are extracting
+        ceil(trunkRows/2) - (in.n_rows - (in.n_rows - floor(truncRows/2))
+        = floor(trunkRows/2) + 1 - (in.n_rows - (in.n_rows - floor(truncRows/2))
+        = 2*floor(trunkRows/2) + 1 = trunkRows elements
+     
+     */
+    trunkMat
+        = join_cols(
+                    join_rows(in.submat(0, 0, ceil(truncRows/2)-1, ceil(truncCols/2)-1),
+                              in.submat(0, in.n_cols-floor(truncCols/2), ceil(truncRows/2)-1, in.n_cols-1)),
+                    join_rows(in.submat(in.n_rows-floor(truncRows/2), 0, in.n_rows-1, ceil(truncCols/2)-1),
+                              in.submat(in.n_rows-floor(truncRows/2), in.n_cols-floor(truncCols/2), in.n_rows-1, in.n_cols-1))
+                    );
+
+    // if truncRows or truncCols is even, we have to take the average of the highest truncated frequency in that direction
+    if (truncRows % 2 == 0) {
+        trunkMat.row(truncRows/2)
+        = (join_rows(
+                     in.submat(truncRows/2, 0, truncRows/2, ceil(truncCols/2)-1),
+                     in.submat(truncRows/2, in.n_cols-floor(truncCols/2), truncRows/2, in.n_cols-1)
+                     )
+           + trunkMat.row(truncRows/2))/2.0;
+    }
+    if (truncCols % 2 == 0) {
+        trunkMat.col(truncCols/2)
+        = (join_cols(
+                     in.submat(0, truncCols/2, ceil(truncRows/2)-1, truncCols/2),
+                     in.submat(in.n_rows-floor(truncRows/2), truncCols/2, in.n_rows-1, truncCols/2)
+                     )
+           + trunkMat.col(truncCols/2))/2.0;
+    }
+    if ((truncRows % 2 == 0) &(truncCols % 2 == 0)) {
+        trunkMat(truncRows/2, truncCols/2) = (in(truncRows/2, truncCols/2) + in(truncRows/2, in.n_cols-floor(truncCols/2)) + in(in.n_rows-floor(truncRows/2), truncCols/2) + in(in.n_rows-floor(truncRows/2), in.n_cols-floor(truncCols/2)))/4.0;
+    }
+    
+    return trunkMat;
+}
+
 //////////////////////////////////////
 
 void fresnelPropagateAS::execute(arma::cx_cube& in, double *lambda, double apRad, double z) {
@@ -332,7 +380,7 @@ void fresnelPropagateAS::execute(arma::cx_cube& in, double *lambda, double apRad
     H = square(H) + square(H.t());
     H = fft_shift(H);
     
-//    myFft.execute(in);
+    fftw_plan_with_nthreads(omp_get_max_threads());
     for (int sl=0; sl<in.n_slices; sl++) {
         double k = 2.*M_PI/lambda[sl];
         arma::cx_mat cH = exp(i1*k*z * (sqrt( 1. - 1./4. * pow(lambda[sl]/apRad,2.) * H ))); // Goodman 4-20
@@ -340,7 +388,7 @@ void fresnelPropagateAS::execute(arma::cx_cube& in, double *lambda, double apRad
         in.slice(sl) = in.slice(sl)%cH;
         myIfft.execute(in.slice(sl));
     }
-//    myIfft.execute(in);
+    fftw_plan_with_nthreads(1);
 }
 
 //////////////////////////////////////
@@ -414,9 +462,11 @@ int czt::czt2d(arma::cx_mat& in, int k, double w, double a, arma::cx_mat& out, b
     
     // matlab: nfft = 2^nextpow2(m+k-1);
     nfft = pow(2,ceil(log2(m+k-1)));  // next largest power of 2, for ffts
-//    std::cout << "m = " << m << ", n = " << n << ", k = " << k << ", nfft = " << nfft << std::endl;
-//    printf("w = %0.30f\n", w);
-//    printf("a = %0.30f\n", a);
+    if (diagnostics) {
+        std::cout << "m = " << m << ", n = " << n << ", k = " << k << ", nfft = " << nfft << std::endl;
+        printf("w = %0.30f\n", w);
+        printf("a = %0.30f\n", a);
+    }
     
     // set mm=m = max(m,k)
     int mm = 0;
@@ -471,7 +521,9 @@ int czt::czt2d(arma::cx_mat& in, int k, double w, double a, arma::cx_mat& out, b
         kk(i) = i-m+1.0;
         ww(i) = w*(kk(i)*kk(i)/2.0);
     }
-//    std::cout << "length of ww: " << ww.n_elem << std::endl;
+    if (diagnostics) {
+        std::cout << "length of kk: " << kk.n_elem  << ", length of ww: " << ww.n_elem << std::endl;
+    }
 
     aa.set_size(m);
     // matlab: nn = (0:(m-1))';
@@ -503,12 +555,12 @@ int czt::czt2d(arma::cx_mat& in, int k, double w, double a, arma::cx_mat& out, b
         for (int i=aa.n_elem - 5; i<aa.n_elem; i++)
             printf("caa(%d) = %0.15f + %0.15fi\n", i, real(caa(i)), imag(caa(i)));
         
-        save_mat("ww.fits", ww);
-        save_mat("dww.fits", dww);
-        save_mat("aww.fits", aww);
-        save_mat("aa.fits", aa);
-        save_mat("caa.fits", caa);
-        save_mat("kk.fits", kk);
+        save_vec("ww.fits", ww);
+        save_vec("dww.fits", dww);
+        save_vec("aww.fits", aww);
+        save_vec("aa.fits", aa);
+        save_vec("caa.fits", caa);
+        save_vec("kk.fits", kk);
     }
 //    y.zeros(nfft, n); // zero pad
     
@@ -523,8 +575,8 @@ int czt::czt2d(arma::cx_mat& in, int k, double w, double a, arma::cx_mat& out, b
         std::cout << "fv:" << std::endl;
         fv(arma::span(0, 4)).print();
         std::cout << "finished fft2" << std::endl;
-        save_mat("testfv.fits", fv);
-        save_mat("testiww.fits", iww);
+        save_vec("testfv.fits", fv);
+        save_vec("testiww.fits", iww);
     }
 //    std::cout << "=========== computing fv time: " << timer.toc() << " seconds" << std::endl;
     
@@ -632,14 +684,14 @@ void zoomFft::init(arrayGeom agIn, arrayGeom agOut, double *lambdaFocalLength, i
         lFl[i] = lambdaFocalLength[i];
         Ax[i] = 2*M_PI*agIn.pixelSizeX*agOut.pixelX[0]/lFl[i];
         Wx[i] = -2*M_PI*agIn.pixelSizeX*agOut.pixelSizeX/lFl[i];
-        if (agIn.pixelSizeX != agIn.pixelSizeY | agOut.pixelY[0] != agOut.pixelSizeY) {
+        if (agIn.pixelSizeX != agIn.pixelSizeY | agOut.pixelSizeX != agOut.pixelSizeY | agOut.pixelY[0] != agOut.pixelX[0]) {
             Ay[i] = 2*M_PI*agIn.pixelSizeY*agOut.pixelY[0]/lFl[i];
             Wy[i] = -2*M_PI*agIn.pixelSizeY*agOut.pixelSizeY/lFl[i];
         } else {
             Ay[i] = Ax[i];
             Wy[i] = Wx[i];
         }
-        //        std::cout << "Ax Ay Wx Wy" << Ax << " " << Ay << " " << Wx << " " << Wy << std::endl;
+//        std::cout << "Ax Ay Wx Wy" << Ax << " " << Ay << " " << Wx << " " << Wy << std::endl;
     }
     //    agIn.print("agIn");
     //    agOut.print("agOut");
