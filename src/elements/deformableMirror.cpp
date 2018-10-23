@@ -53,6 +53,8 @@ void deformableMirror::read_actuator_file(const char *filename) {
     nActuatorRows = actuatorMat.n_rows;
     nActuatorCols = actuatorMat.n_cols;
     std::cout << "read_actuator_file: nActuatorRows = " << nActuatorRows << ", nActuatorCols = " << nActuatorCols << std::endl;
+    actuatorGeom.set_geometry(nActuatorCols, nActuatorRows, 1.0);
+//    actuatorGeom.draw();
 }
 
 void deformableMirror::init(initCommandSet*& cmdBlock) {
@@ -70,6 +72,31 @@ void deformableMirror::init(initCommandSet*& cmdBlock) {
     compute_influence_function();
     compute_deformable_mirror_surface();
 //    draw("init");
+    
+    switch (optSelectionType) {
+        case DM_OPT_CIRCLE: {
+                arma::umat inOptSet = (actuatorGeom.pixelRR <= optRadius);
+                optPixelIndex = find(inOptSet);
+            }
+            break;
+            
+        case DM_OPT_ARRAY: {
+                int dataCount = 0;
+                optPixelIndex.set_size(optNRows*optNCols);
+                for (int i=0; i<optNRows; i++)
+                    for (int j=0; j<optNCols; j++) {
+                        optPixelIndex[dataCount] = sub2ind(size(actuatorMat), optr0 + i*optStride, optc0 + j*optStride);
+                        dataCount++;
+                    }
+            }
+            break;
+            
+        default:
+            std::cout << "bad optSelectionType " << optSelectionType << std::endl;
+            assert(NULL);
+            break;
+    }
+    
     
     post_init();
 }
@@ -97,6 +124,22 @@ void deformableMirror::set(std::string fieldName, const char *arg) {
     else if (fieldName == "sigma") {
         sigma = atof(arg);
     }
+    else if (fieldName == "optRadius") {
+        // arg is a single float
+        optRadius = atoi(arg);
+        optSelectionType = DM_OPT_CIRCLE;
+    }
+    else if (fieldName == "optArray") {
+        int v1, v2, v3, v4, v5;
+        // arg is a comma separated list of 5 ints
+        sscanf(arg, "%d, %d, %d, %d, %d", &v1, &v2, &v3, &v4, &v5);
+        optr0 = v1;
+        optc0 = v2;
+        optStride = v3;
+        optNRows = v4;
+        optNCols = v5;
+        optSelectionType = DM_OPT_ARRAY;
+    }
     else if (fieldName == "nActuatorRows") {
         nActuatorRows = atoi(arg);
     }
@@ -110,6 +153,11 @@ void deformableMirror::set(std::string fieldName, const char *arg) {
 void deformableMirror::get_optimization_data(const char *dataName, void *data) {
     if (!strcmp(dataName, "actuatorValues")) {
         arma::vec dataToReturn;
+        dataToReturn.set_size(optPixelIndex.n_elem);
+        for (int i=0; i<optPixelIndex.n_elem; i++) {
+            dataToReturn[i] = actuatorMat(optPixelIndex[i]);
+        }
+/*
         dataToReturn.set_size(optNRows*optNCols);
         int dataCount = 0;
         for (int i=0; i<optNRows; i++)
@@ -117,6 +165,7 @@ void deformableMirror::get_optimization_data(const char *dataName, void *data) {
                 dataToReturn[dataCount] = actuatorMat(optr0 + i*optStride, optc0 + j*optStride);
                 dataCount++;
             }
+*/
         *(arma::vec *)data = dataToReturn;
 //        *(arma::vec *)data = vectorize(actuatorMat);
     }
@@ -126,11 +175,17 @@ void deformableMirror::set_optimization_data(const char *dataName, void *data) {
     if (!strcmp(dataName, "actuatorValues")) {
         arma::vec returnedData = *(arma::vec *)data;
         int dataCount = 0;
+        for (int i=0; i<optPixelIndex.n_elem; i++) {
+            actuatorMat(optPixelIndex[i]) = returnedData[i];
+        }
+/*
+        int dataCount = 0;
         for (int i=0; i<optNRows; i++)
             for (int j=0; j<optNCols; j++) {
                 actuatorMat(optr0 + i*optStride, optc0 + j*optStride) = returnedData[dataCount];
                 dataCount++;
             }
+ */
         //        fpmSags = *(arma::vec *)data;
         compute_deformable_mirror_surface();
         //        draw_mat(mirrorMat, "mirrorMat", "matlab");
@@ -150,7 +205,7 @@ void deformableMirror::compute_influence_function(void) {
     assert(nActuatorRows > 0);
     
     // assumes the actuator array is square
-    double influenceSigma = sigma*initialEfield->arrayGeometry.physicalSize/nActuatorRows;
+    double influenceSigma = sigma*initialEfield->arrayGeometry.physicalSize/((double)nActuatorRows);
     
     influenceFunction = exp(-4*log(2)*(square(initialEfield->arrayGeometry.pixelXX) + square(initialEfield->arrayGeometry.pixelYY))/(influenceSigma*influenceSigma));
 //    std::cout << "influenceFunction size: " << size(influenceFunction) << std::endl;
@@ -163,8 +218,8 @@ void deformableMirror::compute_deformable_mirror_surface(void) {
     assert(nActuatorCols > 0);
 
     // upsample the actuator data by evenly placing the data as individual points in an array of the same size as the influence function
-    int upSampleRowFactor = ceil((influenceFunction.n_rows + 1)/nActuatorRows);
-    int upSampleColFactor = ceil((influenceFunction.n_cols + 1)/nActuatorCols);
+    int upSampleRowFactor = ceil((influenceFunction.n_rows + 1)/((double)nActuatorRows));
+    int upSampleColFactor = ceil((influenceFunction.n_cols + 1)/((double)nActuatorCols));
 
 //    std::cout << "compute_deformable_mirror_surface: upSampleRowFactor = " << upSampleRowFactor << ", upSampleColFactor = " << upSampleColFactor << std::endl;
     
@@ -191,7 +246,7 @@ void deformableMirror::compute_deformable_mirror_surface(void) {
     arma::mat fxs = arma::ones(FTactuatorUpsample.n_rows, 1)*fx;
     arma::mat fys = fy*arma::ones(1, FTactuatorUpsample.n_cols);
     
-    arma::mat phaseMat = fxs*(influenceFunction.n_rows*(1-1/nActuatorRows)/2) + fys*(influenceFunction.n_cols*(1-1/nActuatorCols)/2);
+    arma::mat phaseMat = fxs*(influenceFunction.n_rows*(1-1/((double)nActuatorRows))/2) + fys*(influenceFunction.n_cols*(1-1/((double)nActuatorCols))/2);
 //    save_mat("phaseMat.fits", phaseMat);
     FTactuatorUpsample = FTactuatorUpsample % exp(2*M_PI*i1*phaseMat);
 //    save_mat("FTactuatorUpsample_phaseShifted.fits", FTactuatorUpsample);

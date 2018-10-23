@@ -1,9 +1,9 @@
 figure;
 
-% tgtGeomHexNum = fitsread('../../../donutPiaa/mask_data_hexNum.fits');
-% tgtGeomNSubPix = fitsread('../../../donutPiaa/mask_data_nSubPix.fits');
-tgtGeomHexNum = fitsread('../../wfirst_base_mask_data_1024_hexNum.fits');
-tgtGeomNSubPix = fitsread('../../wfirst_base_mask_data_1024_nSubPix.fits');
+tgtGeomHexNum = fitsread('../../../donutPiaa/mask_data_hexNum.fits');
+tgtGeomNSubPix = fitsread('../../../donutPiaa/mask_data_nSubPix.fits');
+% tgtGeomHexNum = fitsread('../../wfirst_base_mask_data_1024_hexNum.fits');
+% tgtGeomNSubPix = fitsread('../../wfirst_base_mask_data_1024_nSubPix.fits');
 NBsubPix = 64;
 tgtGeomSagVals = zeros(size(tgtGeomHexNum));
 while (1) 
@@ -28,6 +28,9 @@ while (1)
     c = a(3:2:end);
     v = a(4:2:end);
     ii = find(c < 100);
+    if isempty(ii)
+        ii = 0;
+    end
     semilogy(c(ii+1:end),v(ii+1:end),'ro-');
     ylim([min(v), prctile(v, 50)]);
     title([num2str(v(end))]);

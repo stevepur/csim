@@ -88,7 +88,7 @@ void regionContrast::set(std::string fieldName, const char *arg) {
 
 void regionContrast::get_region_pixels(efield *E, arma::uvec& pixelIndex) {
     
-    std::cout << "get_region_pixels: loD=" << loD << " radius1=" << radius1 << " radius2=" << radius2 << " angle1=" << angle1 << " angle2=" << angle2 << std::endl;
+    std::cout << "get_region_pixels: loD=" << loD << " radius1=" << radius1 << " radius2=" << radius2 << " angle1=" << angle1 << " angle2=" << angle2 << " xlim1=" << xlim1 << " xlim2=" << xlim2 << std::endl;
     arma::umat inSample =
         (E->arrayGeometry.pixelXX/loD >= xlim1)
         % (E->arrayGeometry.pixelXX/loD <= xlim2)
@@ -199,6 +199,7 @@ void regionContrast::compute_contrast(void) {
     FILE *fid = fopen(filename, "w");
     fprintf(fid, "%f, %f\n", angle1, angle2);
     fprintf(fid, "%f, %f\n", radius1, radius2);
+    fprintf(fid, "%f, %f\n", xlim1, xlim2);
     fprintf(fid, "%e\n", contrast);
     fclose(fid);
 }
@@ -209,4 +210,5 @@ void regionContrast::print(const char *hdr) {
     std::cout << "referenceLambda: " << referenceLambda << std::endl;
     std::cout << "region angles: " << angle1 << " to " << angle2 << std::endl;
     std::cout << "region radii: " << radius1 << " to " << radius2 << std::endl;
+    std::cout << "region x limits: " << xlim1 << " to " << xlim2 << std::endl;
 }

@@ -37,11 +37,14 @@ efield* fpmPupToLyot::execute(efield* E, celem* prev, celem* next, double time) 
     
     omp_set_nested(1);
     if (!maskIsInited) {
+        // this needs to be computed whenever the mask changes
 //        std::cout << "------------- initing fpmPupToLyot ---------------" << std::endl;
         fftMHatTimesfftPaddedEScale.set_size(E->E[0][0]->n_slices);
 
         double *lambda = new double[E->E[0][0]->n_slices];
-        lambdaFocalLength = new double[E->E[0][0]->n_slices];
+        if (lambdaFocalLength == NULL)
+            lambdaFocalLength = new double[E->E[0][0]->n_slices];
+        fflush(stdout);
         // create space for a zero-padded E array, with a 2x padding
         paddedE = arma::zeros<arma::cx_cube>(2*nRowsE, 2*nColsE, E->E[0][0]->n_slices);
         for (int sl=0; sl<E->E[0][0]->n_slices; sl++) {
@@ -53,9 +56,15 @@ efield* fpmPupToLyot::execute(efield* E, celem* prev, celem* next, double time) 
         fftMaskHatCalib = arma::zeros<arma::cx_cube>(2*nRowsE, 2*nColsE, E->E[0][0]->n_slices);
         fftMaskHat = arma::zeros<arma::cx_cube>(2*nRowsE, 2*nColsE, E->E[0][0]->n_slices);
 
-        propZoomFft = new zoomFft[omp_get_max_threads()];
-        paddedEFft = new fft[omp_get_max_threads()];
-        myIfft = new ifft[omp_get_max_threads()];
+        if (propZoomFft == NULL)
+            propZoomFft = new zoomFft[omp_get_max_threads()];
+        fflush(stdout);
+        if (paddedEFft == NULL)
+            paddedEFft = new fft[omp_get_max_threads()];
+        fflush(stdout);
+        if (myIfft == NULL)
+            myIfft = new ifft[omp_get_max_threads()];
+        fflush(stdout);
         fftw_plan_with_nthreads(omp_get_max_threads());
         for (int t=0; t<omp_get_max_threads(); t++) {
             paddedEFft[t].init(paddedE.slice(0));
@@ -74,11 +83,13 @@ efield* fpmPupToLyot::execute(efield* E, celem* prev, celem* next, double time) 
             mask->set_fpmMatAmp(this, lambda[sl], sl);
             // matlab: mask.M_hat = zoomFFT_realunits(mask.x, mask.y, mask.M - 1, pupil_ext.x, pupil_ext.y, pupil.f, lambda);
             // matlab: FFT_M_hat = fft2((fftshift(mask.M_hat)));
-//            std::cout << "---- zoom fft" << std::endl;
-            maskHat = zoomFftSign*propZoomFft[omp_get_thread_num()].execute(fpmMatAmpCalib.slice(sl), sl);
-//            std::cout << "---- finished zoom fft" << std::endl;
-            fftMaskHatCalib.slice(sl) = fft_shift(maskHat);
-            maskFft.execute(fftMaskHatCalib.slice(sl));
+            if (!fftMaskHatCalibComputed) {
+                // don't need to execute whenever the mask changes
+                maskHat = zoomFftSign*propZoomFft[omp_get_thread_num()].execute(fpmMatAmpCalib.slice(sl), sl);
+                fftMaskHatCalib.slice(sl) = fft_shift(maskHat);
+                maskFft.execute(fftMaskHatCalib.slice(sl));
+                fftMaskHatCalibComputed = true;
+            }
         
             maskHat = zoomFftSign*propZoomFft[omp_get_thread_num()].execute(fpmMatAmp.slice(sl), sl);
             fftMaskHat.slice(sl) = fft_shift(maskHat);
@@ -217,7 +228,10 @@ void fpmPupToLyot::get_optimization_data(const char *dataName, void *data) {
 }
 
 void fpmPupToLyot::set_optimization_data(const char *dataName, void *data){
-    mask->set_optimization_data(dataName, data);
+    if (!strcmp(dataName, "reinit"))
+        maskIsInited = false;
+    else
+        mask->set_optimization_data(dataName, data);
 }
 
 void fpmPupToLyot::draw(const char *title) {

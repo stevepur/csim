@@ -126,11 +126,12 @@ class fpmPupToLyot : public celem {
     
     fpmForPupilToLyot *mask;
 
-    zoomFft *propZoomFft;
+    zoomFft *propZoomFft = NULL;
 
-    fft *paddedEFft;
-    ifft *myIfft;
+    fft *paddedEFft = NULL;
+    ifft *myIfft = NULL;
     bool maskIsInited = false;
+    bool fftMaskHatCalibComputed = false;
     
     double focalRatio = -1; // focal length at this point in the coronagraph
     double fRatioSign = 1; // sign convention for fratio in zoomFFT
@@ -152,6 +153,7 @@ public:
     void get_optimization_data(const char *dataName, void *data);
     void set_optimization_data(const char *dataName, void *data);
     void set_babinet(bool onOff);
+    void set_maskIsInited(bool val) { maskIsInited = val; }
 
     void draw(const char *title = "");
 };

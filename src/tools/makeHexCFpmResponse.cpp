@@ -152,6 +152,7 @@ void makeHexCFpmResponse::compute_response(void) {
             doBabinet = true;
             
         globalCoronagraph->set_optimization_data(componentName, "setBabinet", &doBabinet);
+        globalCoronagraph->set_optimization_data(componentName, "reinit", NULL);
         
         // run the coronagraph
         efield *fullEfield = new efield(*initialEfield);

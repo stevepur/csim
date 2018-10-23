@@ -13,6 +13,9 @@
 #include "armadillo"
 #include "../lib/csim_lib.hpp"
 
+#define DM_OPT_CIRCLE 1
+#define DM_OPT_ARRAY 2
+
 class deformableMirror : public celem {
     arma::mat mirrorMat;
     arma::mat influenceFunction;
@@ -28,14 +31,18 @@ class deformableMirror : public celem {
 
     double mirrorSign = 1;
     double sigma = 1;
-    double nActuatorRows = 0;
-    double nActuatorCols = 0;
+    int nActuatorRows = 0;
+    int nActuatorCols = 0;
+    arrayGeom actuatorGeom;
     
-    double optr0 = 0;
-    double optc0 = 0;
-    double optStride = 1;
-    double optNRows = 32;
-    double optNCols = 32;
+    int optSelectionType = DM_OPT_ARRAY;
+    double optRadius = 1e6;
+    int optr0 = 0;
+    int optc0 = 0;
+    int optStride = 1;
+    int optNRows = 32;
+    int optNCols = 32;
+    arma::uvec optPixelIndex;
 
 public:
     deformableMirror();

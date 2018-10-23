@@ -84,9 +84,12 @@ ylabel('contrast');
 grid on;
 
 %%
+% optDir = 'dmOptimization/mono_650nm_mma_full_R17_fromRandom/';
+optDir = 'dmOptimization/';
+% optDir = 'dmOptTest/';
+currentBest = textread([optDir 'optBestVal.txt']);
+currentHistory = textread([optDir 'optValHistory.txt']);
 
-currentBest = textread('dmOptimization/optBestVal.txt');
-currentHistory = textread('dmOptimization/optValHistory.txt');
 figure;
 subplot(1,2,1);
 semilogy(currentHistory(:,1)/60/60, currentHistory(:,2), currentBest(:,1)/60/60, currentBest(:,2));
@@ -104,14 +107,14 @@ grid on;
 
 %%
 figure;
-dmAct = fitsread('dmOptimization/optimalActuators.fits');
+dmAct = fitsread([optDir 'optimalActuators.fits']);
 imagesc(dmAct);
 title(['NLOpt Broadband Actuators, current run: ' num2str(min(currentHistory(:,2)))]);
 axis equal;
 axis tight;
 colorbar;
 
-%%
+%% linear plot
 
 currentBest = textread('dmOptimization/optBestVal.txt');
 currentHistory = textread('dmOptimization/optValHistory.txt');

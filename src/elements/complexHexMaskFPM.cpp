@@ -91,6 +91,7 @@ arma::cx_mat complexHexMaskFPM::make_complex_intpolated_mask(double lambda, doub
 //    char mName[200];
 //    sprintf(mName, "useOnlyThisHexMask_%d.fits", useOnlyThisHex);
 //    const char *mName = "complexIntMask.fits";
+//    save_mat(mName, maskSags, true);
 //    save_mat(mName, complexIntMask, "amPh");
 //    save_mat(mName, complexIntMask, "reIm");
     

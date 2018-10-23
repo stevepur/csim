@@ -34,6 +34,12 @@ class nloptOptimizer {
     arma::vec initX;
     arma::vec startVec;
     arma::vec finalVec;
+    arma::vec previousGradient;
+    arma::vec previousGradientX;
+    double previousGradientContrast = 0;
+    double lastContrast = 0;
+    double gradientDx = 1e-8;
+    double gradientErrorThreshold = 1e-8;
 
     char *componentName = NULL;
     char *dataName = NULL;

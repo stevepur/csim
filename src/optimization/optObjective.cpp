@@ -115,6 +115,7 @@ int optHexRespObjective::get_opt_vector_size(void) {
 void optHexRespObjective::print(const char *hdr) {
     if (hdr != NULL)
         std::cout << hdr << ":" << std::endl;
+    std::cout << "phaseSign = " << phaseSign << std::endl;
     response->print("response data");
     
 }
