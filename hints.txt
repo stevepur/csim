@@ -41,8 +41,10 @@ make
 
 
 # highly profilable
+export MY_LIBDIR=/Users/steve/programming_projects/gnu
 autoreconf --install
-./configure 'CXXFLAGS=-g'
+./configure 'CXXFLAGS= -g -Wunknown-pragmas -fopenmp'
+make clean
 make
 
 # highly optimized, doesn't really help

@@ -31,8 +31,8 @@ public:
     virtual void set_fpmMatAmp(fpmPupToLyot *p2l, double lambda, int sl) {}
 //    virtual void apply_babinet(fpmPupToLyot *p2l, int sl) {}
     virtual void draw(const char *title = ""){}
-    virtual void get_optimization_data(const char *dataName, void *data) {}
-    virtual void set_optimization_data(const char *dataName, void *data) {}
+    virtual void get_optimization_data(const char *dataName, arma::vec& data) {}
+    virtual void set_optimization_data(const char *dataName, arma::vec& data) {}
     void set_babinet(bool onOff) { doBabinet = onOff; }
     
 };
@@ -74,8 +74,8 @@ public:
     void set_geometry(fpmPupToLyot *prop, efield* E, double *lambda, double *lambdaFocalLength);
     void set_fpmMatAmp(fpmPupToLyot *p2l, double lambda, int sl);
     
-    void get_optimization_data(const char *dataName, void *data);
-    void set_optimization_data(const char *dataName, void *data);
+    void get_optimization_data(const char *dataName, arma::vec& data);
+    void set_optimization_data(const char *dataName, arma::vec& data);
     
 //    void apply_babinet(fpmPupToLyot *p2l, int sl);
     void draw(const char *title = "");
@@ -150,8 +150,8 @@ public:
     
     efield* execute(efield* E, celem* prev, celem* next, double time);
     
-    void get_optimization_data(const char *dataName, void *data);
-    void set_optimization_data(const char *dataName, void *data);
+    void get_optimization_data(const char *dataName, arma::vec& data);
+    void set_optimization_data(const char *dataName, arma::vec& data);
     void set_babinet(bool onOff);
     void set_maskIsInited(bool val) { maskIsInited = val; }
 

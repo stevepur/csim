@@ -82,6 +82,10 @@ hexXTest = hexXTest(:);
 hexYTest = hexYTest(:);
 hexRingTest = hexRingTest(:);
 
+hexXTest = hexXTest(hexNumTest < badHexNum);
+hexYTest = hexYTest(hexNumTest < badHexNum);
+hexNumTest = hexNumTest(hexNumTest < badHexNum);
+
 % test
 if any(hexNum ~= hexNumTest(hexNumTest < badHexNum))
     disp('hexNum does not match hexNumTest!!');
@@ -101,10 +105,10 @@ end
 
 hexNumTest(hexNumTest >= badHexNum) = -1;
 
-hexNumTest = hexNum;
-hexXTest = hexX;
-hexYTest = hexY;
-hexRingTest = hexRing;
+% hexNumTest = hexNum;
+% hexXTest = hexX;
+% hexYTest = hexY;
+% hexRingTest = hexRing;
 %%
 figure('Color', 'white');
 text(hexX, hexY, num2str(hexNum));
@@ -114,6 +118,12 @@ axis xy
 
 figure('Color', 'white');
 text(hexXTest, hexYTest, num2str(hexNumTest));
+axis([min(hexXTest) max(hexYTest) min(hexXTest) max(hexYTest)]);
+axis equal
+axis xy
+
+figure('Color', 'white');
+text(hexXTest(hexNumTest>-1), hexYTest(hexNumTest>-1), num2str(hexNumTest(hexNumTest>-1)));
 axis([min(hexXTest) max(hexYTest) min(hexXTest) max(hexYTest)]);
 axis equal
 axis xy

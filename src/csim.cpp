@@ -23,6 +23,7 @@
 #include "makeHexCFpmResponse.hpp"
 #include "differentialEvolutionOptimizer.hpp"
 #include "nloptOptimizer.hpp"
+#include "linearOptimizer.hpp"
 
 int main(int argn, char **argv) {
     arma::wall_clock timer;
@@ -55,7 +56,7 @@ int main(int argn, char **argv) {
         if (!strcmp(cmdBlocks[i]->commandList[0]->getCmdStr(), "telescope")) {
             // create the global telescope
             globalTelescope = new telescope(cmdBlocks[i]);
-            globalTelescope -> print();
+            globalTelescope->print();
         }
         if (!strcmp(cmdBlocks[i]->commandList[0]->getCmdStr(), "coronagraph")) {
             // create the global coronagraph.  This initializes the entire coronagraph
@@ -90,11 +91,20 @@ int main(int argn, char **argv) {
             nloptOptimizer *nlOptimizer = new nloptOptimizer(cmdBlocks[i]);
             nlOptimizer->optimize();
         }
+        if (!strcmp(cmdBlocks[i]->commandList[0]->getCmdStr(), "linearOptimizer")) {
+            // create and execute the contrast curve tool
+            linearOptimizer *linOptimizer = new linearOptimizer(cmdBlocks[i]);
+            linOptimizer->optimize();
+        }
         if (!strcmp(cmdBlocks[i]->commandList[0]->getCmdStr(), "execute")) {
             // do a single execution of the global coronagraph
             timer.tic();
             globalCoronagraph->execute(initialEfield, 0, showTimes);
             std::cout << "csim execution time: " << timer.toc() << " seconds" << std::endl;
+        }
+        if (!strcmp(cmdBlocks[i]->commandList[0]->getCmdStr(), "break")) {
+            // break out of the coronagraph
+            break;
         }
     }
     if (computeFftWisdon)

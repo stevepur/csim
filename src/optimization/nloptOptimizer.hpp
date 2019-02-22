@@ -48,6 +48,8 @@ class nloptOptimizer {
     double globalUpperBound;
     double initLowerBound;
     double initUpperBound;
+    arma::vec lowerBounds;
+    arma::vec upperBounds;
     int optVecSize = 0;
 
     arma::wall_clock optimizationTimer;
@@ -78,7 +80,8 @@ public:
     
     void optimize(void);
     void reset_fullEfield(void);
-    
+    void reset_calibEfield(void);
+
     FILE *get_bestValFid(void) { return bestValFid; }
     FILE *get_histValFid(void) { return histValFid; }
     void increment_nIterations(void) { nIterations++; }

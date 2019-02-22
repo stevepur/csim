@@ -85,21 +85,28 @@ grid on;
 
 %%
 % optDir = 'dmOptimization/mono_650nm_mma_full_R17_fromRandom/';
-optDir = 'dmOptimization/';
+% optDir = 'dmOptimization/poly_3w_bobyqa_opt_6/';
+optDir = 'dmOptimization/linearOptLargeStar/';
 % optDir = 'dmOptTest/';
 currentBest = textread([optDir 'optBestVal.txt']);
 currentHistory = textread([optDir 'optValHistory.txt']);
 
 figure;
-subplot(1,2,1);
-semilogy(currentHistory(:,1)/60/60, currentHistory(:,2), currentBest(:,1)/60/60, currentBest(:,2));
+subplot(1,3,1);
+semilogy(currentHistory(:,1)/60/60, currentHistory(:,2), '+-', currentBest(:,1)/60/60, currentBest(:,2), 'o-');
 title(['NLOpt Broadband History, current run: ' num2str(min(currentBest(:,2)))]);
 xlabel('time (hours)');
 ylabel('contrast');
 legend('all evaluations', 'best value');
 grid on;
-subplot(1,2,2);
-loglog(1:size(currentHistory, 1), currentHistory(:,2));
+subplot(1,3,2);
+loglog(1:size(currentHistory, 1), currentHistory(:,2), '+-');
+title(['NLOpt Broadband History, current run: ' num2str(min(currentHistory(:,2)))]);
+xlabel('evaluation');
+ylabel('contrast');
+grid on;
+subplot(1,3,3);
+plot(1:size(currentHistory, 1), currentHistory(:,2), '+-');
 title(['NLOpt Broadband History, current run: ' num2str(min(currentHistory(:,2)))]);
 xlabel('evaluation');
 ylabel('contrast');
@@ -107,32 +114,63 @@ grid on;
 
 %%
 figure;
-dmAct = fitsread([optDir 'optimalActuators.fits']);
+dmAct = fitsread([optDir2 'optimalActuators.fits']);
 imagesc(dmAct);
-title(['NLOpt Broadband Actuators, current run: ' num2str(min(currentHistory(:,2)))]);
+title(['NLOpt Broadband Actuators, current run: ' num2str(min(currentBest2(:,2)))]);
 axis equal;
 axis tight;
 colorbar;
 
 %% linear plot
 
-currentBest = textread('dmOptimization/optBestVal.txt');
-currentHistory = textread('dmOptimization/optValHistory.txt');
+currentBest = textread('dmOptimization/poly_3w_bobyqa_opt_6/optBestVal.txt');
+currentHistory = textread('dmOptimization/poly_3w_bobyqa_opt_6/optValHistory.txt');
 figure;
-subplot(1,2,1);
-plot(currentHistory(:,1)/60/60, currentHistory(:,2), currentBest(:,1)/60/60, currentBest(:,2));
+t0 = 7.9;
+tcut = 33.9;
+tcut2 = 47;
+t = currentHistory(:,1)/60/60;
+tt1 = find(t>t0 & t < tcut);
+ch1 = currentHistory(tt1,2);
+tt2 = find(t>tcut & t<tcut2);
+ch2 = currentHistory(tt2,2);
+tt3 = find(t>tcut2);
+ch3 = currentHistory(tt3,2);
+b = currentBest(:,1)/60/60;
+bb1 = find(b>t0 & b<tcut);
+cb1 = currentBest(bb1,2);
+bb2 = find(b>tcut & b<tcut2);
+cb2 = currentBest(bb2,2);
+bb3 = find(b>tcut2);
+cb3 = currentBest(bb3,2);
+plot(t(tt1), ch1, b(bb1), cb1, t(tt2), ch2, b(bb2), cb2, t(tt3), ch3, b(bb3), cb3);
 title(['NLOpt Broadband History, current run: ' num2str(min(currentBest(:,2)))]);
 xlabel('time (hours)');
 ylabel('contrast');
-legend('all evaluations', 'best value');
-grid on;
-subplot(1,2,2);
-plot(1:size(currentHistory, 1), currentHistory(:,2));
-title(['NLOpt Broadband History, current run: ' num2str(min(currentHistory(:,2)))]);
-xlabel('evaluation');
-ylabel('contrast');
+legend('all evaluations', 'best value', 'all evaluations', 'best value', 'all evaluations', 'best value');
 grid on;
 
+%%
+optDir1 = 'dmOptimization/linearOpt/';
+optDir2 = 'dmOptimization/linearOptTest1/';
+% optDir = 'dmOptTest/';
+currentBest1 = textread([optDir1 'optBestVal.txt']);
+currentBest2 = textread([optDir2 'optBestVal.txt']);
+
+figure;
+subplot(1,2,1);
+semilogy(currentBest1(:,1)/60/60, currentBest1(:,2), '+-', currentBest2(:,1)/60/60, currentBest2(:,2), 'o-');
+title(['NLOpt Broadband History, current run: ' num2str(min(currentBest2(:,2)))]);
+xlabel('time (hours)');
+ylabel('contrast');
+legend('\mu = 5e7', '\mu = 3e7');
+grid on;
+subplot(1,2,2);
+plot(currentBest1(:,1)/60/60, currentBest1(:,2), '+-', currentBest2(:,1)/60/60, currentBest2(:,2), 'o-');
+title(['NLOpt Broadband History, current run: ' num2str(min(currentBest2(:,2)))]);
+xlabel('time (hours)');
+ylabel('contrast');
+grid on;
 
 
 

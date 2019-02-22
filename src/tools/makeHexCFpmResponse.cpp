@@ -115,7 +115,7 @@ void makeHexCFpmResponse::compute_response(void) {
     // get the data type to be computed (sags in this case)
     // in order to know how many sags we have
     arma::vec origHexSags;
-    globalCoronagraph->get_optimization_data(componentName, dataName, &origHexSags);
+    globalCoronagraph->get_optimization_data(componentName, dataName, origHexSags);
     
     int nSags = origHexSags.n_elem;
 //    nSags = 1;
@@ -123,7 +123,7 @@ void makeHexCFpmResponse::compute_response(void) {
    
     // set all sags to zero
     arma::vec curSag = arma::zeros(size(origHexSags));
-    globalCoronagraph->set_optimization_data(componentName, dataName, &curSag);
+    globalCoronagraph->set_optimization_data(componentName, dataName, curSag);
     
     region->print("response region:");
     arma::uvec regionPixelIndex;
@@ -143,16 +143,21 @@ void makeHexCFpmResponse::compute_response(void) {
     globalCoronagraph->set_calibration_state(false);
     for (int sag=0; sag<=nSags; sag++){
 //    for (int sag=0; sag<1; sag++){
-        globalCoronagraph->set_optimization_data(componentName, "useOnlyThisHex", &sag);
+        arma::vec tempVec;
+        tempVec.set_size(1);
+        tempVec[0] = sag;
+        globalCoronagraph->set_optimization_data(componentName, "useOnlyThisHex", tempVec);
         
         bool doBabinet = false;
         if (sag < nSags)
             doBabinet = false;
         else if (sag == nSags)
             doBabinet = true;
-            
-        globalCoronagraph->set_optimization_data(componentName, "setBabinet", &doBabinet);
-        globalCoronagraph->set_optimization_data(componentName, "reinit", NULL);
+        
+        tempVec[0] = doBabinet;
+        globalCoronagraph->set_optimization_data(componentName, "setBabinet", tempVec);
+        tempVec[0] = 0;
+        globalCoronagraph->set_optimization_data(componentName, "reinit", tempVec);
         
         // run the coronagraph
         efield *fullEfield = new efield(*initialEfield);

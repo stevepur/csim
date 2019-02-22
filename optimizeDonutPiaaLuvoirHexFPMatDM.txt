@@ -32,7 +32,9 @@ start
 		# actuatorFilename:dmOptimization/optimalActuators_crash1.fits
 		# actuatorFilename:dmOptimization/poly_3w_bobyqa_opt/poly_optAct_zeroR17.fits
 		# actuatorFilename:dmOptimization/poly_3w_bobyqa_opt_2/poly_optAct_R17_1p12em8.fits
-		actuatorFilename:dmOptimization/poly_3w_bobyqa_opt_3/poly_optAct_R17_iter3_2p22em9.fits
+		# actuatorFilename:dmOptimization/poly_3w_bobyqa_opt_3/poly_optAct_R17_iter3_2p22em9.fits
+		# actuatorFilename:dmOptimization/poly_3w_bobyqa_opt_4/poly_optAct_R17_iter4_1p594em9.fits
+		actuatorFilename:dmOptimization/poly_3w_bobyqa_opt_5/poly_optAct_R17_iter5_1p387em9.fits
 		sigma:1.3
 		position:0
 		sign:-1
@@ -71,7 +73,9 @@ start
 				# fpmRadius: 1.909557000000000e-04
 				fpmMaskSize: 1024
 				maskFilenameRoot:donutPiaaLuvoir/mask_data
-				sagFilename:dmOptimization/poly_3w_bobyqa_opt_3/hexOptimization/bestOptVector_bobyaDM_iter3_2p0321em9.fits
+				# sagFilename:dmOptimization/poly_3w_bobyqa_opt_5/hexOptimization/bestOptVector_bobyaDM_iter4_1p55em9.fits
+				sagFilename:dmOptimization/poly_3w_bobyqa_opt_4/hexOptimization/bestOptVector_bobyaDM_iter4_1p66em9.fits
+				# sagFilename:dmOptimization/poly_3w_bobyqa_opt_3/hexOptimization/bestOptVector_bobyaDM_iter3_2p0321em9.fits
 				# sagFilename:dmOptimization/poly_3w_bobyqa_opt_2/hexOptimization/bestOptVector_bobyaDM_iter2_2p95em9.fits
 				# sagFilename:donutPiaaLuvoir/csim_v1_bestOptVector_luvoir_donut_mono_no_fresnel.fits
 				# sagFilename:donutPiaaLuvoir/3source/optTest/bestOptVector.fits
@@ -125,5 +129,5 @@ start
 		xlimit:2,1e16
 		anglesInDegrees:-90,90
 	end
-	outputDirectory:dmOptimization/poly_3w_bobyqa_opt_4
+	outputDirectory:dmOptimization/poly_3w_bobyqa_opt_6
 end

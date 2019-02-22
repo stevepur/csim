@@ -41,7 +41,7 @@ efield* fresnelPropagator::execute(efield* E, celem* prev, celem* next, double t
             if (padFactor == 1)
                 propagator.execute(*(E->E[s][p]), lambda, E->arrayRadiusPhysical, z);
             else {
-                std::cout << "==================== padding fresnel ====================" << std::endl;
+//                std::cout << "==================== padding fresnel ====================" << std::endl;
                 int nRowsE = E->E[s][p]->n_rows;
                 int nColsE = E->E[s][p]->n_cols;
                 arma::cx_cube paddedE;

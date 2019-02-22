@@ -54,8 +54,8 @@ public:
     void read_actuator_file(const char *filename);
 
     void set(std::string fieldName, const char *arg);
-    void get_optimization_data(const char *dataName, void *data);
-    void set_optimization_data(const char *dataName, void *data);
+    void get_optimization_data(const char *dataName, arma::vec& data);
+    void set_optimization_data(const char *dataName, arma::vec& data);
     void save_optimization_data(const char *dataName, char *outputDirectory = NULL);
     void compute_influence_function(void);
     void compute_deformable_mirror_surface(void);

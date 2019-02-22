@@ -14,7 +14,7 @@
 
 class celem {
 public:
-    char *name;
+    char *name = NULL;
     double position = 0;
     bool disableForCalibration = false;
     bool calibrating = false;
@@ -36,9 +36,9 @@ public:
     void post_execute(efield* E, celem* prev, celem* next, double time);
     void post_init(void);
     bool set(std::string fieldName, const char *arg);
-    virtual void get_optimization_data(const char *dataName, void *data) {}
-    virtual void set_optimization_data(const char *dataName, void *data) {}
-    virtual void save_optimization_data(const char *dataName, char *outputDirectory = NULL) {}
+    void get_optimization_data(const char *dataName, arma::vec& data);
+    void set_optimization_data(const char *dataName, arma::vec& data);
+    void save_optimization_data(const char *dataName, char *outputDirectory = NULL);
     void print(const char *hdr = "");
     virtual void draw(const char *title);
 };

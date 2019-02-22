@@ -63,8 +63,8 @@ public:
     arma::cx_mat make_complex_intpolated_mask(double lambda, double time);
     void execute(efield* E, arma::cx_mat& tcmat, int sl, double time);
     
-    void get_optimization_data(const char *dataName, void *data);
-    void set_optimization_data(const char *dataName, void *data);
+    void get_optimization_data(const char *dataName, arma::vec& data);
+    void set_optimization_data(const char *dataName, arma::vec& data);
 
     void compute_hex_centers(void);
     void make_hex_array(void);

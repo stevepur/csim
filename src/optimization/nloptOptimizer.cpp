@@ -31,7 +31,7 @@ double nloptOptimizer::eval_contrast(const std::vector<double> &x, std::vector<d
     // send the x data to the coronagraph as an arma::vec
     arma::vec optVec;
     std_vec_to_arma_vec(x, optVec);
-//    std::cout << "optVec: " << optVec << std::endl;
+    std::cout << "optVec: " << optVec << std::endl;
 
     // compute the region intensity via the regionContrast object, which calls the coronagraph
 //    std::cout << "calibMaxIntensity = " << thisOptimizer->calibMaxIntensity << std::endl;
@@ -40,7 +40,8 @@ double nloptOptimizer::eval_contrast(const std::vector<double> &x, std::vector<d
     
     arma::wall_clock setOpttimer;
     setOpttimer.tic();
-    globalCoronagraph->set_optimization_data(thisOptimizer->componentName, thisOptimizer->dataName, &optVec);
+//    globalCoronagraph->set_optimization_data(thisOptimizer->componentName, thisOptimizer->dataName, optVec);
+    globalCoronagraph->set_optimization_data(optVec);
     std::cout << "time to set optimization data: " << setOpttimer.toc() << std::endl;
     double contrast;
     arma::vec tx(optVec.n_elem);
@@ -57,10 +58,13 @@ double nloptOptimizer::eval_contrast(const std::vector<double> &x, std::vector<d
         contrast = norm(optVec - testGoal);
     } else {
         arma::mat fullIntensity;
+        arma::mat calibIntensity;
+        thisOptimizer->reset_calibEfield();
+        double calibMaxIntensity = thisOptimizer->region->compute_intensity(thisOptimizer->calibEfield, calibIntensity, true);
         thisOptimizer->reset_fullEfield();
-        double fullMaxIntensity = thisOptimizer->region->compute_intensity(thisOptimizer->fullEfield, fullIntensity, false)/thisOptimizer->calibMaxIntensity;
+        double fullMaxIntensity = thisOptimizer->region->compute_intensity(thisOptimizer->fullEfield, fullIntensity, false)/calibMaxIntensity;
         // normalize
-        fullIntensity /= thisOptimizer->calibMaxIntensity;
+        fullIntensity /= calibMaxIntensity;
         
     //    draw_mat(log10(fullIntensity), "fullIntensity", "matlab");
         // compute the contrast
@@ -113,7 +117,8 @@ double nloptOptimizer::eval_contrast(const std::vector<double> &x, std::vector<d
                         std::cout << i << " ";
                         fflush(stdout);
                     }
-                    globalCoronagraph->set_optimization_data(thisOptimizer->componentName, thisOptimizer->dataName, &dx);
+//                    globalCoronagraph->set_optimization_data(thisOptimizer->componentName, thisOptimizer->dataName, dx);
+                    globalCoronagraph->set_optimization_data(dx);
                     thisOptimizer->reset_fullEfield();
                     double gradientMaxIntensity = thisOptimizer->region->compute_intensity(thisOptimizer->fullEfield, gradientIntensity, false)/thisOptimizer->calibMaxIntensity;
                     gradientIntensity /= thisOptimizer->calibMaxIntensity;
@@ -160,6 +165,11 @@ void nloptOptimizer::init(initCommandSet*& cmdBlock) {
             region->print("region");
         }
     }
+    
+    globalCoronagraph->get_optimization_data(startVec);
+    optVecSize = startVec.n_elem;
+    initX = startVec;
+    
     print("initialized nlopt optimizer");
 }
 
@@ -180,7 +190,8 @@ void nloptOptimizer::set(std::string fieldName, const char *arg) {
         // arg is two strings separated by a comma,
         // the first string is the name of the component to be optimized
         // the second string is the name of the data to be optimized
-        const char *cPtr = strchr(arg, ',');
+/*
+ const char *cPtr = strchr(arg, ',');
         int componentNameLen = cPtr - arg;
         int dataNameLen = strlen(arg) - componentNameLen + 1;
         componentName = new char[componentNameLen + 1];
@@ -189,12 +200,16 @@ void nloptOptimizer::set(std::string fieldName, const char *arg) {
         componentName[componentNameLen] = '\0';
         strncpy(dataName, cPtr + 1, dataNameLen);
         dataName[dataNameLen] = '\0';
-        std::cout << "optimize component " << componentName << ", data " << dataName << std::endl;
+ */
+        componentName = new char[100];
+        dataName = new char[100];
+        float lb;
+        float ub;
+        sscanf(arg, "%s %s %f %f", componentName, dataName, &lb, &ub);
+        std::cout << "optimize component " << componentName << ", data " << dataName << ", lower bound " << lb << ", upper bound " << ub << std::endl;
         //        draw("initial FPM");
         
-        globalCoronagraph->get_optimization_data(componentName, dataName, &startVec);
-        optVecSize = startVec.n_elem;
-        initX = startVec;
+        globalCoronagraph->add_optimization_data(componentName, dataName, lb, ub);
     }
     else if (fieldName == "optMethod") {
         // arg is a string
@@ -320,9 +335,17 @@ void nloptOptimizer::set(std::string fieldName, const char *arg) {
 }
 
 void nloptOptimizer::reset_fullEfield(void){
-    delete fullEfield;
+    if (fullEfield != NULL)
+        delete fullEfield;
     fullEfield = new efield(*initialEfield);
     fullEfield->set("name", "FPM Efield");
+}
+
+void nloptOptimizer::reset_calibEfield(void){
+    if (calibEfield != NULL)
+        delete calibEfield;
+    calibEfield = new efield(*initialEfield);
+    calibEfield->set("name", "calibration Efield");
 }
 
 void nloptOptimizer::optimize(void) {
@@ -348,8 +371,14 @@ void nloptOptimizer::optimize(void) {
     opt.set_maxeval(maxIterations);
     opt.set_ftol_rel(fRelTolerance);
     opt.set_xtol_rel(xRelTolerance);
-    opt.set_upper_bounds(globalUpperBound);
-    opt.set_lower_bounds(globalLowerBound);
+    
+    globalCoronagraph->get_optimization_bounds(lowerBounds, upperBounds);
+    std::vector<double> lbv;
+    std::vector<double> ubv;
+    arma_vec_to_std_vec(lowerBounds, lbv);
+    arma_vec_to_std_vec(upperBounds, ubv);
+    opt.set_lower_bounds(lbv);
+    opt.set_upper_bounds(ubv);
     double minf;
     std::vector<double> x;
     arma_vec_to_std_vec(initX, x);
@@ -359,7 +388,7 @@ void nloptOptimizer::optimize(void) {
     opt.get_initial_step(x, stepSizeV);
     arma::vec stepSize;
     std_vec_to_arma_vec(stepSizeV, stepSize);
-    opt.set_initial_step(1e-8);
+//    opt.set_initial_step(1e-8);
     std::cout << "mean step size = " << mean(stepSize) << std::endl;
     std::cout << "max step size = " << max(stepSize) << std::endl;
     std::cout << "min step size = " << min(stepSize) << std::endl;
@@ -385,7 +414,7 @@ void nloptOptimizer::optimize(void) {
     fclose(histValFid);
     std::cout << "nIterations: " << nIterations << ", time " << timer.toc() << " seconds" << std::endl;
 //    std::cout << "original opt values: " << startVec << std::endl;
-    globalCoronagraph->get_optimization_data(componentName, dataName, &finalVec);
+    globalCoronagraph->get_optimization_data(componentName, dataName, finalVec);
 //    std::cout << "final opt values: " << finalVec << std::endl;
     std::cout << "max difference between original and final: " << max(abs(finalVec - startVec)) << std::endl;
     globalCoronagraph->save_optimization_data(componentName, dataName);

@@ -47,7 +47,7 @@ void fft::init(arma::cx_cube& in, int length) {
                 fftw_destroy_plan(fftPlan.plan);
             fftPlan.plan = fftw_plan_dft_3d(in.n_cols, in.n_rows, in.n_slices, (double(*)[2])&in(0,0,0), (double(*)[2])&in(0,0,0), FFTW_FORWARD, FFTW_WISDOM_ONLY);
             if (fftPlan.plan == NULL) {
-                std::cout << "no wisdom, estimating" << std::endl;
+//                std::cout << "no wisdom, estimating" << std::endl;
                 arma::cx_cube tmp = in; // fftw_plan_dft_3d may mess with in
                 fftPlan.plan = fftw_plan_dft_3d(in.n_cols, in.n_rows, in.n_slices, (double(*)[2])&in(0,0,0), (double(*)[2])&in(0,0,0), FFTW_FORWARD, fftPlanType);
                 in = tmp;
@@ -76,7 +76,7 @@ void ifft::init(arma::cx_cube& in, int length) {
                 fftw_destroy_plan(fftPlan.plan);
             fftPlan.plan = fftw_plan_dft_3d(in.n_cols, in.n_rows, in.n_slices, (double(*)[2])&in(0,0,0), (double(*)[2])&in(0,0,0), FFTW_BACKWARD, FFTW_WISDOM_ONLY);
             if (fftPlan.plan == NULL) {
-                std::cout << "no wisdom, estimating" << std::endl;
+//                std::cout << "no wisdom, estimating" << std::endl;
                 arma::cx_cube tmp = in; // fftw_plan_dft_3d may mess with in
                 fftPlan.plan = fftw_plan_dft_3d(in.n_cols, in.n_rows, in.n_slices, (double(*)[2])&in(0,0,0), (double(*)[2])&in(0,0,0), FFTW_BACKWARD, fftPlanType);
                 in = tmp;
@@ -110,7 +110,7 @@ void fft::init(arma::cx_mat& in, int length) {
                 fftw_destroy_plan(fftPlan.plan);
             fftPlan.plan = fftw_plan_dft_2d(in.n_cols, in.n_rows, (double(*)[2])&in(0,0), (double(*)[2])&in(0,0), FFTW_FORWARD, FFTW_WISDOM_ONLY);
             if (fftPlan.plan == NULL) {
-                std::cout << "no wisdom, estimating" << std::endl;
+//                std::cout << "no wisdom, estimating" << std::endl;
                 arma::cx_mat tmp = in; // fftw_plan_dft_2d may mess with in
                 fftPlan.plan = fftw_plan_dft_2d(in.n_cols, in.n_rows, (double(*)[2])&in(0,0), (double(*)[2])&in(0,0), FFTW_FORWARD, fftPlanType);
                 in = tmp;
@@ -142,7 +142,7 @@ void fft::init(arma::cx_mat& in, arma::cx_mat& out, int length) {
                 fftw_destroy_plan(fftPlan.plan);
             fftPlan.plan = fftw_plan_dft_2d(in.n_cols, in.n_rows, (double(*)[2])&in(0,0), (double(*)[2])&out(0,0), FFTW_FORWARD, FFTW_WISDOM_ONLY);
             if (fftPlan.plan == NULL) {
-                std::cout << "no wisdom, estimating" << std::endl;
+//                std::cout << "no wisdom, estimating" << std::endl;
                 arma::cx_mat tmp = in; // fftw_plan_dft_2d may mess with in
                 fftPlan.plan = fftw_plan_dft_2d(in.n_cols, in.n_rows, (double(*)[2])&in(0,0), (double(*)[2])&out(0,0), FFTW_FORWARD, fftPlanType);
                 in = tmp;
@@ -175,7 +175,7 @@ void ifft::init(arma::cx_mat& in, int length) {
                 fftw_destroy_plan(fftPlan.plan);
             fftPlan.plan = fftw_plan_dft_2d(in.n_cols, in.n_rows, (double(*)[2])&in(0,0), (double(*)[2])&in(0,0), FFTW_BACKWARD, FFTW_WISDOM_ONLY);
             if (fftPlan.plan == NULL) {
-                std::cout << "no wisdom, estimating" << std::endl;
+//                std::cout << "no wisdom, estimating" << std::endl;
                 arma::cx_mat tmp = in; // fftw_plan_dft_2d may mess with in
                 fftPlan.plan = fftw_plan_dft_2d(in.n_cols, in.n_rows, (double(*)[2])&in(0,0), (double(*)[2])&in(0,0), FFTW_BACKWARD, fftPlanType);
                 in = tmp;
@@ -208,7 +208,7 @@ void ifft::init(arma::cx_mat& in, arma::cx_mat& out, int length) {
                 fftw_destroy_plan(fftPlan.plan);
             fftPlan.plan = fftw_plan_dft_2d(in.n_cols, in.n_rows, (double(*)[2])&in(0,0), (double(*)[2])&out(0,0), FFTW_BACKWARD, FFTW_WISDOM_ONLY);
             if (fftPlan.plan == NULL) {
-                std::cout << "no wisdom, estimating" << std::endl;
+//                std::cout << "no wisdom, estimating" << std::endl;
                 arma::cx_mat tmp = in; // fftw_plan_dft_2d may mess with in
                 fftPlan.plan = fftw_plan_dft_2d(in.n_cols, in.n_rows, (double(*)[2])&in(0,0), (double(*)[2])&out(0,0), FFTW_BACKWARD, fftPlanType);
                 in = tmp;
@@ -241,7 +241,7 @@ void fft::init(arma::cx_vec& in, arma::cx_vec& out, int length) {
                 fftw_destroy_plan(fftPlan.plan);
             fftPlan.plan = fftw_plan_dft_1d(in.n_elem, (double(*)[2])&in(0), (double(*)[2])&out(0), FFTW_FORWARD, FFTW_WISDOM_ONLY);
             if (fftPlan.plan == NULL) {
-                std::cout << "no wisdom, estimating" << std::endl;
+//                std::cout << "no wisdom, estimating" << std::endl;
                 arma::cx_vec tmp = in; // fftw_plan_dft_1d may mess with in
                 fftPlan.plan = fftw_plan_dft_1d(in.n_elem, (double(*)[2])&in(0), (double(*)[2])&out(0), FFTW_FORWARD, fftPlanType);
                 in = tmp;
@@ -273,7 +273,7 @@ void ifft::init(arma::cx_vec& in, arma::cx_vec& out, int length) {
                 fftw_destroy_plan(fftPlan.plan);
             fftPlan.plan = fftw_plan_dft_1d(in.n_elem, (double(*)[2])&in(0), (double(*)[2])&out(0), FFTW_BACKWARD, FFTW_WISDOM_ONLY);
             if (fftPlan.plan == NULL) {
-                std::cout << "no wisdom, estimating" << std::endl;
+//                std::cout << "no wisdom, estimating" << std::endl;
                 arma::cx_vec tmp = in; // fftw_plan_dft_1d may mess with in
                 fftPlan.plan = fftw_plan_dft_1d(in.n_elem, (double(*)[2])&in(0), (double(*)[2])&out(0), FFTW_BACKWARD, fftPlanType);
                 in = tmp;

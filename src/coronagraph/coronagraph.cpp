@@ -199,8 +199,58 @@ void coronagraph::execute(efield *inE, double time, bool showTimes) {
     }
 }
 
+void coronagraph::add_optimization_data(const char *componentName, const char *dataName, double lb, double ub) {
+    arma::vec tempVec;
+    
+    get_optimization_data(componentName, dataName, tempVec);
+    optData *newOptData = new optData(componentName, dataName, tempVec.n_elem, lb, ub);
+    optDataListDataLength += newOptData->dataLength;
+    std::cout << "optDataListDataLength = " << optDataListDataLength << std::endl;
+    
+    optDataList.push_back(newOptData);
+    
+    for (std::list<optData*>::iterator it = optDataList.begin(); it != optDataList.end(); ++it) {
+        (*it)->print();
+    }
+}
+
+void coronagraph::get_optimization_bounds(arma::vec& lowerBoundData, arma::vec& upperBoundData) {
+    lowerBoundData.set_size(optDataListDataLength);
+    upperBoundData.set_size(optDataListDataLength);
+    int dataCount = 0;
+    arma::vec tempVec;
+    for (std::list<optData*>::iterator it = optDataList.begin(); it != optDataList.end(); ++it) {
+        get_optimization_data((*it)->componentName, (*it)->dataName, tempVec);
+        lowerBoundData.subvec(dataCount, dataCount + (*it)->dataLength - 1) = (*it)->lowerBound*arma::ones<arma::vec>((*it)->dataLength);
+        upperBoundData.subvec(dataCount, dataCount + (*it)->dataLength - 1) = (*it)->upperBound*arma::ones<arma::vec>((*it)->dataLength);
+        dataCount += (*it)->dataLength;
+    }
+}
+
+void coronagraph::get_optimization_data(arma::vec& allOptData) {
+    allOptData.set_size(optDataListDataLength);
+    int dataCount = 0;
+    arma::vec tempVec;
+    for (std::list<optData*>::iterator it = optDataList.begin(); it != optDataList.end(); ++it) {
+        get_optimization_data((*it)->componentName, (*it)->dataName, tempVec);
+        allOptData.subvec(dataCount, dataCount + (*it)->dataLength - 1) = tempVec;
+        dataCount += (*it)->dataLength;
+    }
+}
+
+void coronagraph::set_optimization_data(arma::vec& allOptData) {
+    int dataCount = 0;
+    arma::vec tempVec;
+    for (std::list<optData*>::iterator it = optDataList.begin(); it != optDataList.end(); ++it) {
+        tempVec = allOptData.subvec(dataCount, dataCount + (*it)->dataLength - 1);
+        set_optimization_data((*it)->componentName, (*it)->dataName, tempVec);
+        dataCount += (*it)->dataLength;
+    }
+}
+
+
 // get optimization data dataName from the component componentName
-void coronagraph::get_optimization_data(const char *componentName, const char *dataName, void *data) {
+void coronagraph::get_optimization_data(const char *componentName, const char *dataName, arma::vec& data) {
     for (std::list<celem*>::iterator it = elemList.begin(); it != elemList.end(); ++it) {
         if (!strcmp((*it)->name, componentName))
             (*it)->get_optimization_data(dataName, data);
@@ -208,7 +258,7 @@ void coronagraph::get_optimization_data(const char *componentName, const char *d
 }
 
 // set optimization data dataName from the component componentName
-void coronagraph::set_optimization_data(const char *componentName, const char *dataName, void *data) {
+void coronagraph::set_optimization_data(const char *componentName, const char *dataName, arma::vec& data) {
     for (std::list<celem*>::iterator it = elemList.begin(); it != elemList.end(); ++it) {
         if (!strcmp((*it)->name, componentName)) {
             (*it)->set_optimization_data(dataName, data);
@@ -225,6 +275,46 @@ void coronagraph::save_optimization_data(const char *componentName, const char *
     }
 }
 
+// Print the coronagraph
+void coronagraph::print(void) {
+    int elementCount = 0;
+    
+    for (std::list<celem*>::iterator it = elemList.begin(); it != elemList.end(); ++it) {
+        std::cout << "=============== coronagraph element " << elementCount << std::endl;
+        (*it)->print();
+        elementCount++;
+    }
+}
 
+/////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////
 
+optData::optData(const char *cName, const char *dName, int nElem, double lb, double ub) {
+    if (componentName != NULL) {
+        delete[] componentName;
+        componentName = NULL;
+    }
+    componentName = new char[strlen(cName)+1];
+    strcpy(componentName, cName);
 
+    if (dataName != NULL) {
+        delete[] dataName;
+        dataName = NULL;
+    }
+    dataName = new char[strlen(dName)+1];
+    strcpy(dataName, dName);
+    
+    dataLength = nElem;
+    lowerBound = lb;
+    upperBound = ub;
+}
+
+void optData::print(const char *hdr) {
+    std::cout << "optData " << hdr << ":" << std::endl;
+    std::cout << "componentName: " << componentName << std::endl;
+    std::cout << "dataName: " << dataName << std::endl;
+    std::cout << "dataLength: " << dataLength << std::endl;
+    std::cout << "lowerBound: " << lowerBound << std::endl;
+    std::cout << "upperbound: " << upperBound << std::endl;
+}

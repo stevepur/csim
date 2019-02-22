@@ -10,6 +10,8 @@
 #include <assert.h>
 
 celem::celem() {
+    name = new char[strlen("unnamed")+1];
+    strcpy(name, "unnamed");
 }
 
 efield* celem::execute(efield* E, celem* prev, celem* next, double time) {
@@ -66,8 +68,13 @@ bool celem::set(std::string fieldName, const char *arg) {
     }
     else if (fieldName == "name") {
         // arg is one double value
+        if (name != NULL) {
+            delete[] name;
+            name = NULL;
+        }
         name = new char[strlen(arg)+1];
         strcpy(name, arg);
+//        std::cout << "celem: set name to " << name << std::endl;
     }
     else if (fieldName == "disableForCalibration") {
         // arg is a string
@@ -121,6 +128,26 @@ bool celem::set(std::string fieldName, const char *arg) {
     
     return true;
 }
+
+void celem::get_optimization_data(const char *dataName, arma::vec& data) {
+    if (!strcmp(dataName, "position")) {
+        data.set_size(1);
+        data[0] = position;
+    }
+}
+
+void celem::set_optimization_data(const char *dataName, arma::vec& data) {
+    if (!strcmp(dataName, "position")) {
+        position = data[0];
+        printf("set %s postion = %0.15f\n", name, position);
+//        std::cout << "set " << name << " position " << position << std::endl;
+    }
+}
+
+void celem::save_optimization_data(const char *dataName, char *outputDirectory) {
+    
+}
+
 
 void celem::print(const char *hdr) {
     std::cout << "celem: " << hdr << std::endl;

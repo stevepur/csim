@@ -173,16 +173,18 @@ void complexHexMaskFPM::load_sags(const char *filename){
     load_vec(filename, fpmSags);
 }
 
-void complexHexMaskFPM::get_optimization_data(const char *dataName, void *data) {
+void complexHexMaskFPM::get_optimization_data(const char *dataName, arma::vec& data) {
+    celem::get_optimization_data(dataName, data);
     if (!strcmp(dataName, "sags"))
-        *(arma::vec *)data = fpmSags;
+        data = fpmSags;
 }
 
-void complexHexMaskFPM::set_optimization_data(const char *dataName, void *data) {
+void complexHexMaskFPM::set_optimization_data(const char *dataName, arma::vec& data) {
+    celem::set_optimization_data(dataName, data);
     if (!strcmp(dataName, "sags"))
-        fpmSags = *(arma::vec *)data;
+        fpmSags = data;
     else if (!strcmp(dataName, "useOnlyThisHex"))
-        useOnlyThisHex = *(int *)data;
+        useOnlyThisHex = (int) data[0];
     
     std::cout << "useOnlyThisHex = " << useOnlyThisHex << std::endl;
 //    std::cout << "max sag = " << max(fpmSags) << ", min sag = " << min(fpmSags) << ", n sags = " << fpmSags.n_elem << std::endl;

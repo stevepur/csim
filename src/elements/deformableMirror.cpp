@@ -150,7 +150,8 @@ void deformableMirror::set(std::string fieldName, const char *arg) {
         std::cout << "!!! deformableMirror bad set field name: " << fieldName << std::endl;
 }
 
-void deformableMirror::get_optimization_data(const char *dataName, void *data) {
+void deformableMirror::get_optimization_data(const char *dataName, arma::vec& data) {
+    celem::get_optimization_data(dataName, data);
     if (!strcmp(dataName, "actuatorValues")) {
         arma::vec dataToReturn;
         dataToReturn.set_size(optPixelIndex.n_elem);
@@ -166,17 +167,17 @@ void deformableMirror::get_optimization_data(const char *dataName, void *data) {
                 dataCount++;
             }
 */
-        *(arma::vec *)data = dataToReturn;
+        data = dataToReturn;
 //        *(arma::vec *)data = vectorize(actuatorMat);
     }
 }
 
-void deformableMirror::set_optimization_data(const char *dataName, void *data) {
+void deformableMirror::set_optimization_data(const char *dataName, arma::vec& data) {
+    celem::set_optimization_data(dataName, data);
     if (!strcmp(dataName, "actuatorValues")) {
-        arma::vec returnedData = *(arma::vec *)data;
-        int dataCount = 0;
+//        int dataCount = 0;
         for (int i=0; i<optPixelIndex.n_elem; i++) {
-            actuatorMat(optPixelIndex[i]) = returnedData[i];
+            actuatorMat(optPixelIndex[i]) = data[i];
         }
 /*
         int dataCount = 0;
@@ -193,6 +194,7 @@ void deformableMirror::set_optimization_data(const char *dataName, void *data) {
 }
 
 void deformableMirror::save_optimization_data(const char *dataName, char *outputDirectory) {
+    celem::save_optimization_data(dataName, outputDirectory);
     if (!strcmp(dataName, "actuatorValues")) {
         
         std::string fname = (std::string)outputDirectory + "/optimalActuators.fits";

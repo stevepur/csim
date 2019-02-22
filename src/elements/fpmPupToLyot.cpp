@@ -223,11 +223,12 @@ void fpmPupToLyot::set(std::string fieldName, const char *arg) {
         std::cout << "!!! fpmPupToLyot bad set field name: " << fieldName << std::endl;
 }
 
-void fpmPupToLyot::get_optimization_data(const char *dataName, void *data) {
+void fpmPupToLyot::get_optimization_data(const char *dataName, arma::vec& data) {
     mask->get_optimization_data(dataName, data);
 }
 
-void fpmPupToLyot::set_optimization_data(const char *dataName, void *data){
+void fpmPupToLyot::set_optimization_data(const char *dataName, arma::vec& data){
+    celem::set_optimization_data(dataName, data);
     if (!strcmp(dataName, "reinit"))
         maskIsInited = false;
     else
@@ -453,13 +454,13 @@ void fpmIntHexCMCForPupToLyot::set_fpmMatAmp(fpmPupToLyot *p2l, double lambda, i
     }
 }
 
-void fpmIntHexCMCForPupToLyot::get_optimization_data(const char *dataName, void *data) {
+void fpmIntHexCMCForPupToLyot::get_optimization_data(const char *dataName, arma::vec& data) {
     hexFPM->get_optimization_data(dataName, data);
 }
 
-void fpmIntHexCMCForPupToLyot::set_optimization_data(const char *dataName, void *data) {
+void fpmIntHexCMCForPupToLyot::set_optimization_data(const char *dataName, arma::vec& data) {
     if (!strcmp(dataName, "setBabinet"))
-        doBabinet = *(bool *)data;
+        doBabinet = (bool) data[0];
     else
         hexFPM->set_optimization_data(dataName, data);
 }
